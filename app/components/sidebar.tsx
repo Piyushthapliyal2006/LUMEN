@@ -25,6 +25,7 @@ import {
   Mail,
   Menu,
   X,
+  Sparkles,
 } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -66,6 +67,12 @@ export function Sidebar() {
     setOpenPanel(panel)
   }
 
+  const handleNewChat = () => {
+    window.open(window.location.origin, "_blank", "noopener,noreferrer")
+    setPinnedPanel("history")
+    setOpenPanel("history")
+  }
+
   const handlePinToggle = (panel: string) => {
     if (pinnedPanel === panel) {
       setPinnedPanel(null)
@@ -89,15 +96,17 @@ export function Sidebar() {
     >
       <div className="flex flex-col h-full w-16 shrink-0 items-center">
         {/* Logo */}
-        <Button variant="ghost" size="icon" className="mb-6 h-10 w-10 shrink-0">
-          <div className="flex h-8 w-8 items-center justify-center">
-            <Image src="/images/perplexity-logo.png" alt="Logo" width={32} height={32} className="object-contain" />
+        <Button variant="ghost" size="icon" className="mb-6 h-10 w-10 shrink-0" aria-label="Lumen home">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-600 text-lg font-bold text-white">
+            L
           </div>
         </Button>
 
         <Button
           variant="ghost"
-          className="mb-8 h-10 w-10 shrink-0 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full bg-muted/50"
+          onClick={handleNewChat}
+          aria-label="Open a new chat"
+          className="mb-8 h-10 w-10 shrink-0 rounded-full bg-muted/50 text-muted-foreground hover:bg-accent hover:text-foreground"
         >
           <Plus className="h-5 w-5 shrink-0" />
         </Button>

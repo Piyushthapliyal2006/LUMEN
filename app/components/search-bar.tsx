@@ -2,13 +2,20 @@
 
 import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { Search, Focus, Grid3x3, Globe, Cpu, Paperclip, Mic } from "lucide-react"
+import { Search, Focus, Grid3x3, Globe, Cpu, Paperclip, Mic, Send } from "lucide-react"
 
 const suggestions = ["test", "test internet speed", "test my speed", "testament", "test my internet speed"]
 
 type Mode = "search" | "deep-research" | "create"
 
-const modeTooltips = {
+const modeTooltips: Record<Mode, {
+  title: string
+  description: string
+  proEnabled: boolean
+  proDescription: string
+  footer: string
+  badge?: string
+}> = {
   search: {
     title: "Search",
     description: "Get fast answers to everyday questions",
@@ -173,13 +180,8 @@ export function SearchBar({ onSearch }: { onSearch?: () => void }) {
               onClick={() => onSearch?.()}
               className="h-8 w-8 md:h-9 md:w-9 rounded-lg bg-teal-600 text-white transition-all hover:bg-teal-700 active:scale-95 shrink-0"
             >
-              <svg className="h-3.5 w-3.5 md:h-4 md:w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="4" y="8" width="2" height="8" rx="1" fill="currentColor" />
-                <rect x="8" y="4" width="2" height="16" rx="1" fill="currentColor" />
-                <rect x="12" y="6" width="2" height="12" rx="1" fill="currentColor" />
-                <rect x="16" y="10" width="2" height="4" rx="1" fill="currentColor" />
-                <rect x="20" y="7" width="2" height="10" rx="1" fill="currentColor" />
-              </svg>
+              <Send className="h-3.5 w-3.5 md:h-4 md:w-4" aria-hidden="true" />
+              <span className="sr-only">Send search</span>
             </Button>
           </div>
         </div>
