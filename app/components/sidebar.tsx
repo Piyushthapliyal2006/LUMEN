@@ -56,7 +56,7 @@ const historyItems = [
   "Debugging techniques advanced",
 ]
 
-export function Sidebar() {
+export function Sidebar({ onNewChat }: { onNewChat?: () => void }) {
   const [openPanel, setOpenPanel] = useState<string | null>(null)
   const [pinnedPanel, setPinnedPanel] = useState<string | null>(null)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
@@ -68,7 +68,7 @@ export function Sidebar() {
   }
 
   const handleNewChat = () => {
-    window.open(window.location.origin, "_blank", "noopener,noreferrer")
+    onNewChat?.()
     setPinnedPanel("history")
     setOpenPanel("history")
   }
@@ -130,16 +130,16 @@ export function Sidebar() {
           <div className="relative mb-2">
             <Button
               variant="ghost"
-              onMouseEnter={() => handlePanelChange("discover")}
+              onMouseEnter={() => handlePanelChange("plugins")}
               className={`h-10 w-10 shrink-0 mx-auto transition-colors ${
-                openPanel === "discover"
+                openPanel === "plugins"
                   ? "text-foreground bg-accent"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent"
               }`}
             >
-              <Compass className="h-5 w-5" />
+              <Sparkles className="h-5 w-5" />
             </Button>
-            <div className="text-[9px] text-muted-foreground text-center mt-1 font-medium">Discover</div>
+            <div className="text-[9px] text-muted-foreground text-center mt-1 font-medium">Plugins</div>
           </div>
 
           <div className="relative mb-2">
@@ -155,21 +155,6 @@ export function Sidebar() {
               <Grid3x3 className="h-5 w-5" />
             </Button>
             <div className="text-[9px] text-muted-foreground text-center mt-1 font-medium">Spaces</div>
-          </div>
-
-          <div className="relative mb-2">
-            <Button
-              variant="ghost"
-              onMouseEnter={() => handlePanelChange("finance")}
-              className={`h-10 w-10 shrink-0 mx-auto transition-colors ${
-                openPanel === "finance"
-                  ? "text-foreground bg-accent"
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
-              }`}
-            >
-              <TrendingUp className="h-5 w-5" />
-            </Button>
-            <div className="text-[9px] text-muted-foreground text-center mt-1 font-medium">Finance</div>
           </div>
 
           <div className="relative mb-2">
@@ -275,18 +260,18 @@ export function Sidebar() {
             </div>
           )}
 
-          {openPanel === "discover" && (
+          {openPanel === "plugins" && (
             <div className="flex flex-col h-full animate-in fade-in duration-300">
               <div className="flex items-center justify-between px-3 py-2.5">
-                <h2 className="text-sm font-semibold">Discover</h2>
+                <h2 className="text-sm font-semibold">Plugins</h2>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className={`h-6 w-6 transition-colors ${pinnedPanel === "discover" ? "text-primary" : ""}`}
-                  onClick={() => handlePinToggle("discover")}
+                  className={`h-6 w-6 transition-colors ${pinnedPanel === "plugins" ? "text-primary" : ""}`}
+                  onClick={() => handlePinToggle("plugins")}
                 >
                   <Pin
-                    className={`h-3.5 w-3.5 transition-transform ${pinnedPanel === "discover" ? "rotate-45" : ""}`}
+                    className={`h-3.5 w-3.5 transition-transform ${pinnedPanel === "plugins" ? "rotate-45" : ""}`}
                   />
                 </Button>
               </div>

@@ -6,10 +6,16 @@ import { useState } from "react"
 
 export function Search() {
   const [showWidgets, setShowWidgets] = useState(false)
+  const [chatKey, setChatKey] = useState(0)
+
+  const handleNewChat = () => {
+    setShowWidgets(false)
+    setChatKey((current) => current + 1)
+  }
 
   return (
     <>
-      <Sidebar />
+      <Sidebar onNewChat={handleNewChat} />
 
       {/* Main Content */}
       <main className="flex flex-1 flex-col bg-background">
@@ -22,7 +28,7 @@ export function Search() {
               </div>
             </header>
 
-            <SearchBar onSearch={() => setShowWidgets(true)} />
+            <SearchBar key={chatKey} onSearch={() => setShowWidgets(true)} />
 
 
             {showWidgets && <WidgetCards />}
