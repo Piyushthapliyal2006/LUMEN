@@ -67,9 +67,12 @@ export function Search() {
 
             {messages.length > 0 && (
               <section className="space-y-4" aria-live="polite">
-                {messages.map((message, index) => (
-                  <div key={`${message.role}-${index}`} className={message.role === "user" ? "ml-auto max-w-[85%] rounded-2xl bg-teal-600 px-4 py-3 text-sm text-white" : "max-w-[90%] rounded-2xl border border-border bg-card px-4 py-3 text-sm leading-6 text-foreground"}>
-                    {message.content || "Lumen is thinking..."}
+                        {messages.map((message, index) => (
+                  <div
+                    key={`${message.role}-${index}`}
+                    className={message.role === "user" ? "ml-auto max-w-[85%] px-1 py-2 text-sm text-foreground" : "max-w-[90%] px-1 py-2 text-sm leading-6 text-foreground"}
+                  >
+                    {message.content ? message.content : <span className="inline-flex gap-1" aria-label="Lumen is responding"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-teal-500" /><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-teal-500 [animation-delay:150ms]" /><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-teal-500 [animation-delay:300ms]" /></span>}
                   </div>
                 ))}
               </section>

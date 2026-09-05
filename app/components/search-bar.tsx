@@ -122,10 +122,10 @@ export function SearchBar({ onSearch }: { onSearch?: (query: string) => Promise<
               onMouseEnter={() => handleMouseEnter("search")}
               onMouseLeave={() => setHoveredMode(null)}
               onClick={() => setActiveMode("search")}
-              className={`h-8 w-8 md:h-9 md:w-9 rounded-md transition-all duration-300 ${
+              className={`h-8 w-8 md:h-9 md:w-9 rounded-md ${
                 activeMode === "search"
-                  ? "border-2 border-teal-500/60 bg-background text-teal-600 shadow-sm hover:border-teal-500/70 hover:text-teal-700 dark:text-teal-500"
-                  : "border-2 border-transparent text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+                  ? "border-2 border-teal-500/60 bg-background text-teal-600 dark:text-teal-500"
+                  : "border-2 border-transparent text-muted-foreground"
               }`}
             >
               <Search className="h-4 w-4 md:h-[17px] md:w-[17px]" />
@@ -139,10 +139,10 @@ export function SearchBar({ onSearch }: { onSearch?: (query: string) => Promise<
               onMouseEnter={() => handleMouseEnter("deep-research")}
               onMouseLeave={() => setHoveredMode(null)}
               onClick={() => setActiveMode("deep-research")}
-              className={`h-8 w-8 md:h-9 md:w-9 rounded-md transition-all duration-300 ${
+              className={`h-8 w-8 md:h-9 md:w-9 rounded-md ${
                 activeMode === "deep-research"
-                  ? "border-2 border-teal-500/60 bg-background text-teal-600 shadow-sm hover:border-teal-500/70 hover:text-teal-700 dark:text-teal-500"
-                  : "border-2 border-transparent text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+                  ? "border-2 border-teal-500/60 bg-background text-teal-600 dark:text-teal-500"
+                  : "border-2 border-transparent text-muted-foreground"
               }`}
             >
               <Focus className="h-4 w-4 md:h-[17px] md:w-[17px]" />
@@ -156,10 +156,10 @@ export function SearchBar({ onSearch }: { onSearch?: (query: string) => Promise<
               onMouseEnter={() => handleMouseEnter("create")}
               onMouseLeave={() => setHoveredMode(null)}
               onClick={() => setActiveMode("create")}
-              className={`h-8 w-8 md:h-9 md:w-9 rounded-md transition-all duration-300 ${
+              className={`h-8 w-8 md:h-9 md:w-9 rounded-md ${
                 activeMode === "create"
-                  ? "border-2 border-teal-500/60 bg-background text-teal-600 shadow-sm hover:border-teal-500/70 hover:text-teal-700 dark:text-teal-500"
-                  : "border-2 border-transparent text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+                  ? "border-2 border-teal-500/60 bg-background text-teal-600 dark:text-teal-500"
+                  : "border-2 border-transparent text-muted-foreground"
               }`}
             >
               <Grid3x3 className="h-4 w-4 md:h-[17px] md:w-[17px]" />
