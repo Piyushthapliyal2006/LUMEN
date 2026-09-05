@@ -4,13 +4,50 @@ import { SearchBar } from "./search-bar"
 import { WidgetCards } from "./widget-cards"
 import { useState } from "react"
 
+type Message = { role: "user" | "assistant"; content: string }
+
 export function Search() {
   const [showWidgets, setShowWidgets] = useState(false)
   const [chatKey, setChatKey] = useState(0)
+  const [messages, setMessages] = useState<Message[]>([])
 
   const handleNewChat = () => {
     setShowWidgets(false)
+    setMessages([])
     setChatKey((current) => current + 1)
+  }
+
+  const handleSearch = async (query: string) => {
+    setShowWidgets(true)
+    setMessages((current) => [...current, { role: "user", content: query }])
+    setMessages((current) => [...current, { role: "assistant", content: "" }])
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: query }),
+      })
+      if (!response.ok || !response.body) throw new Error("Unable to fetch a response")
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      while (true) {
+        const { value, done } = await reader.read()
+        if (done) break
+        const chunk = decoder.decode(value, { stream: true })
+        setMessages((current) => {
+          const next = [...current]
+          next[next.length - 1] = { ...next[next.length - 1], content: next[next.length - 1].content + chunk }
+          return next
+        })
+      }
+    } catch {
+      setMessages((current) => {
+        const next = [...current]
+        next[next.length - 1] = { role: "assistant", content: "I couldn&apos;t reach Gemini right now. Please try again." }
+        return next
+      })
+    }
   }
 
   return (
@@ -28,10 +65,19 @@ export function Search() {
               </div>
             </header>
 
-            <SearchBar key={chatKey} onSearch={() => setShowWidgets(true)} />
+            {messages.length > 0 && (
+              <section className="space-y-4" aria-live="polite">
+                {messages.map((message, index) => (
+                  <div key={`${message.role}-${index}`} className={message.role === "user" ? "ml-auto max-w-[85%] rounded-2xl bg-teal-600 px-4 py-3 text-sm text-white" : "max-w-[90%] rounded-2xl border border-border bg-card px-4 py-3 text-sm leading-6 text-foreground"}>
+                    {message.content || "Lumen is thinking..."}
+                  </div>
+                ))}
+              </section>
+            )}
 
+            <SearchBar key={chatKey} onSearch={handleSearch} />
 
-            {showWidgets && <WidgetCards />}
+            {messages.length === 0 && showWidgets && <WidgetCards />}
           </div>
         </div>
       </main>

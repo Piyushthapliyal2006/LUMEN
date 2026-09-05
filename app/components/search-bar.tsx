@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { Search, Focus, Grid3x3, Globe, Cpu, Paperclip, Mic, Send } from "lucide-react"
+import { Search, Focus, Grid3x3, Paperclip, Mic, Send } from "lucide-react"
 
 const suggestions = ["test", "test internet speed", "test my speed", "testament", "test my internet speed"]
 
@@ -40,8 +40,9 @@ const modeTooltips: Record<Mode, {
   },
 }
 
-export function SearchBar({ onSearch }: { onSearch?: () => void }) {
+export function SearchBar({ onSearch }: { onSearch?: (query: string) => Promise<void> | void }) {
   const [query, setQuery] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
   const [activeMode, setActiveMode] = useState<Mode>("search")
@@ -49,6 +50,19 @@ export function SearchBar({ onSearch }: { onSearch?: () => void }) {
   const [tooltipOffset, setTooltipOffset] = useState(0)
 
   const buttonRefs = useRef<{ [key in Mode]?: HTMLButtonElement }>({})
+
+  const handleSubmit = async () => {
+    const trimmedQuery = query.trim()
+    if (!trimmedQuery || isSubmitting) return
+    setIsSubmitting(true)
+    setQuery("")
+    setShowSuggestions(false)
+    try {
+      await onSearch?.(trimmedQuery)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   const handleMouseEnter = (mode: Mode) => {
     setHoveredMode(mode)
@@ -87,6 +101,12 @@ export function SearchBar({ onSearch }: { onSearch?: () => void }) {
               setTimeout(() => setShowSuggestions(false), 150)
             }}
             placeholder="Ask anything..."
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.nativeEvent.isComposing && event.keyCode !== 229) {
+                event.preventDefault()
+                void handleSubmit()
+              }
+            }}
             className="w-full border-0 bg-transparent text-[14px] md:text-[15px] text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
           />
         </div>
@@ -150,20 +170,6 @@ export function SearchBar({ onSearch }: { onSearch?: () => void }) {
             <Button
               variant="ghost"
               size="icon"
-              className="hidden sm:flex h-9 w-9 rounded-lg text-muted-foreground transition-all hover:bg-accent/60 hover:text-foreground"
-            >
-              <Globe className="h-[17px] w-[17px]" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hidden sm:flex h-9 w-9 rounded-lg text-muted-foreground transition-all hover:bg-accent/60 hover:text-foreground"
-            >
-              <Cpu className="h-[17px] w-[17px]" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
               className="h-8 w-8 md:h-9 md:w-9 rounded-lg text-muted-foreground transition-all hover:bg-accent/60 hover:text-foreground"
             >
               <Paperclip className="h-4 w-4 md:h-[17px] md:w-[17px]" />
@@ -177,7 +183,7 @@ export function SearchBar({ onSearch }: { onSearch?: () => void }) {
             </Button>
             <Button
               size="icon"
-              onClick={() => onSearch?.()}
+              onClick={() => void handleSubmit()}
               className="h-8 w-8 md:h-9 md:w-9 rounded-lg bg-teal-600 text-white transition-all hover:bg-teal-700 active:scale-95 shrink-0"
             >
               <Send className="h-3.5 w-3.5 md:h-4 md:w-4" aria-hidden="true" />

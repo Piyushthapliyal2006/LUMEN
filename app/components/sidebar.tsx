@@ -409,10 +409,6 @@ export function Sidebar({ onNewChat }: { onNewChat?: () => void }) {
             <div className="flex flex-col h-full animate-in fade-in duration-300">
               <div className="p-1.5 pt-3">
                 <button className="w-full flex items-center gap-2.5 px-2.5 py-2 text-[13px] hover:bg-accent rounded transition-colors">
-                  <Compass className="h-4 w-4 shrink-0" />
-                  <span className="font-normal">Discover</span>
-                </button>
-                <button className="w-full flex items-center gap-2.5 px-2.5 py-2 text-[13px] hover:bg-accent rounded transition-colors">
                   <Grid3x3 className="h-4 w-4 shrink-0" />
                   <span className="font-normal">Spaces</span>
                 </button>
