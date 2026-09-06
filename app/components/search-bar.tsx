@@ -2,11 +2,11 @@
 
 import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { Search, Focus, Grid3x3, Paperclip, Mic, Send } from "lucide-react"
+import { Search, Focus, Paperclip, Mic, Send, X, FileText, Image as ImageIcon } from "lucide-react"
 
 const suggestions = ["test", "test internet speed", "test my speed", "testament", "test my internet speed"]
 
-type Mode = "search" | "deep-research" | "create"
+type Mode = "search" | "deep-research"
 
 const modeTooltips: Record<Mode, {
   title: string
@@ -30,17 +30,13 @@ const modeTooltips: Record<Mode, {
     proDescription: "In-depth reports with more sources, charts, and advanced reasoning",
     footer: "Extended access for subscribers",
   },
-  create: {
-    title: "Create files and apps",
-    description: "Turn your ideas into docs, slides, dashboards, and more",
-    badge: "New",
-    proEnabled: true,
-    proDescription: "Turn your ideas into completed docs, slides, dashboards, and more",
-    footer: "48 queries remaining this month",
-  },
 }
 
-export function SearchBar({ onSearch }: { onSearch?: (query: string) => Promise<void> | void }) {
+type SearchBarProps = {
+  onSearch?: (query: string, files: File[]) => Promise<void> | void
+}
+
+export function SearchBar({ onSearch }: SearchBarProps) {
   const [query, setQuery] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -48,6 +44,8 @@ export function SearchBar({ onSearch }: { onSearch?: (query: string) => Promise<
   const [activeMode, setActiveMode] = useState<Mode>("search")
   const [hoveredMode, setHoveredMode] = useState<Mode | null>(null)
   const [tooltipOffset, setTooltipOffset] = useState(0)
+  const [files, setFiles] = useState<File[]>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const buttonRefs = useRef<{ [key in Mode]?: HTMLButtonElement }>({})
 
@@ -58,10 +56,22 @@ export function SearchBar({ onSearch }: { onSearch?: (query: string) => Promise<
     setQuery("")
     setShowSuggestions(false)
     try {
-      await onSearch?.(trimmedQuery)
+      await onSearch?.(trimmedQuery, files)
+      setFiles([])
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handleFiles = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(event.target.files || [])
+    const validFiles = selectedFiles.filter((file) => {
+      const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")
+      const isImage = ["image/jpeg", "image/png", "image/webp"].includes(file.type)
+      return (isPdf || isImage) && file.size <= 10 * 1024 * 1024
+    })
+    setFiles((current) => [...current, ...validFiles].slice(0, 5))
+    event.target.value = ""
   }
 
   const handleMouseEnter = (mode: Mode) => {
@@ -81,9 +91,22 @@ export function SearchBar({ onSearch }: { onSearch?: (query: string) => Promise<
     <div className="relative">
       <div
         className={`animate-in fade-in slide-in-from-bottom-4 duration-500 rounded-2xl border-2 bg-card shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all hover:shadow-[0_4px_30px_rgb(0,0,0,0.06)] ${
-          isFocused ? "border-teal-500/50 ring-1 ring-teal-500/20" : "border-teal-500/20 hover:border-teal-500/30"
+          isFocused ? "border-orange-500/50 ring-1 ring-orange-500/20" : "border-orange-500/20 hover:border-orange-500/30"
         }`}
       >
+        {files.length > 0 && (
+          <div className="flex flex-wrap gap-2 px-4 pt-3 md:px-5">
+            {files.map((file, index) => (
+              <div key={`${file.name}-${index}`} className="flex max-w-full items-center gap-1.5 rounded-md border border-border bg-muted px-2 py-1 text-xs text-foreground">
+                {file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf") ? <FileText className="h-3.5 w-3.5 shrink-0 text-orange-600" /> : <ImageIcon className="h-3.5 w-3.5 shrink-0 text-orange-600" />}
+                <span className="max-w-[180px] truncate">{file.name}</span>
+                <button type="button" onClick={() => setFiles((current) => current.filter((_, fileIndex) => fileIndex !== index))} aria-label={`Remove ${file.name}`}>
+                  <X className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
         {/* Input */}
         <div className="px-4 md:px-5 py-3 md:py-3.5">
           <input
@@ -124,7 +147,7 @@ export function SearchBar({ onSearch }: { onSearch?: (query: string) => Promise<
               onClick={() => setActiveMode("search")}
               className={`h-8 w-8 md:h-9 md:w-9 rounded-md ${
                 activeMode === "search"
-                  ? "border-2 border-teal-500/60 bg-background text-teal-600 dark:text-teal-500"
+                  ? "border-2 border-orange-500/60 bg-background text-orange-600 dark:text-orange-400"
                   : "border-2 border-transparent text-muted-foreground"
               }`}
             >
@@ -141,28 +164,11 @@ export function SearchBar({ onSearch }: { onSearch?: (query: string) => Promise<
               onClick={() => setActiveMode("deep-research")}
               className={`h-8 w-8 md:h-9 md:w-9 rounded-md ${
                 activeMode === "deep-research"
-                  ? "border-2 border-teal-500/60 bg-background text-teal-600 dark:text-teal-500"
+                  ? "border-2 border-orange-500/60 bg-background text-orange-600 dark:text-orange-400"
                   : "border-2 border-transparent text-muted-foreground"
               }`}
             >
               <Focus className="h-4 w-4 md:h-[17px] md:w-[17px]" />
-            </Button>
-            <Button
-              ref={(el) => {
-                if (el) buttonRefs.current.create = el
-              }}
-              variant="ghost"
-              size="icon"
-              onMouseEnter={() => handleMouseEnter("create")}
-              onMouseLeave={() => setHoveredMode(null)}
-              onClick={() => setActiveMode("create")}
-              className={`h-8 w-8 md:h-9 md:w-9 rounded-md ${
-                activeMode === "create"
-                  ? "border-2 border-teal-500/60 bg-background text-teal-600 dark:text-teal-500"
-                  : "border-2 border-transparent text-muted-foreground"
-              }`}
-            >
-              <Grid3x3 className="h-4 w-4 md:h-[17px] md:w-[17px]" />
             </Button>
           </div>
 
@@ -170,10 +176,13 @@ export function SearchBar({ onSearch }: { onSearch?: (query: string) => Promise<
             <Button
               variant="ghost"
               size="icon"
+              onClick={() => fileInputRef.current?.click()}
+              aria-label="Attach images or PDF files"
               className="h-8 w-8 md:h-9 md:w-9 rounded-lg text-muted-foreground transition-all hover:bg-accent/60 hover:text-foreground"
             >
               <Paperclip className="h-4 w-4 md:h-[17px] md:w-[17px]" />
             </Button>
+            <input ref={fileInputRef} type="file" accept="application/pdf,image/jpeg,image/png,image/webp" multiple className="hidden" onChange={handleFiles} />
             <Button
               variant="ghost"
               size="icon"
@@ -184,7 +193,7 @@ export function SearchBar({ onSearch }: { onSearch?: (query: string) => Promise<
             <Button
               size="icon"
               onClick={() => void handleSubmit()}
-              className="h-8 w-8 md:h-9 md:w-9 rounded-lg bg-teal-600 text-white transition-all hover:bg-teal-700 active:scale-95 shrink-0"
+              className="h-8 w-8 md:h-9 md:w-9 rounded-lg bg-orange-600 text-white transition-all hover:bg-orange-700 active:scale-95 shrink-0"
             >
               <Send className="h-3.5 w-3.5 md:h-4 md:w-4" aria-hidden="true" />
               <span className="sr-only">Send search</span>
@@ -216,45 +225,13 @@ export function SearchBar({ onSearch }: { onSearch?: (query: string) => Promise<
 
       {hoveredMode && (
         <div
-          className="animate-in fade-in slide-in-from-top-2 duration-200 absolute top-full mt-2 w-[340px] rounded-xl border border-border/50 bg-[#1a1a1a] p-3 text-white shadow-xl"
+          className="pointer-events-none absolute top-full mt-2 whitespace-nowrap rounded-md border border-border/60 bg-popover px-2.5 py-1.5 text-xs font-medium text-popover-foreground shadow-md"
           style={{
             left: `${tooltipOffset}px`,
             transform: "translateX(-50%)",
           }}
         >
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-1.5 mb-1">
-                <h3 className="text-sm font-semibold">{modeTooltips[hoveredMode].title}</h3>
-                {modeTooltips[hoveredMode].badge && (
-                  <span className="rounded bg-zinc-800 px-1.5 py-0.5 text-[10px] font-medium text-zinc-300">
-                    {modeTooltips[hoveredMode].badge}
-                  </span>
-                )}
-              </div>
-              <p className="text-[11px] text-zinc-300 mb-2.5 leading-relaxed">
-                {modeTooltips[hoveredMode].description}
-              </p>
-            </div>
-          </div>
-
-          <div className="border-t border-zinc-800 pt-2.5">
-            <div className="flex items-center gap-1.5 mb-1">
-              <span className="rounded bg-teal-600 px-1.5 py-0.5 text-[9px] font-bold text-white">pro</span>
-              <div className="flex items-center gap-1">
-                <span className="text-[11px] font-medium text-teal-400">Enabled</span>
-                <svg className="h-3 w-3 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-            </div>
-            <p className="text-[11px] text-zinc-300 mb-1.5 leading-relaxed">
-              {modeTooltips[hoveredMode].proDescription}
-            </p>
-            <p className="text-[10px] text-zinc-500">{modeTooltips[hoveredMode].footer}</p>
-          </div>
-
-          <div className="absolute -top-2 left-1/2 -translate-x-1/2 h-3 w-3 rotate-45 border-l border-t border-border/50 bg-[#1a1a1a]" />
+          {modeTooltips[hoveredMode].title}
         </div>
       )}
     </div>

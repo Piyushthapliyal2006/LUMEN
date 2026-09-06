@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Clock,
@@ -9,7 +9,6 @@ import {
   TrendingUp,
   MoreHorizontal,
   Bell,
-  ArrowUpFromDot,
   Plus,
   Pin,
   Target,
@@ -23,45 +22,113 @@ import {
   MoreVertical,
   Calendar,
   Mail,
+  Share2,
+  Trash2,
   Menu,
   X,
   Sparkles,
+  Moon,
+  Sun,
+  UserCircle,
 } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import Image from "next/image"
-import { UpgradeModal } from "./upgrade-modal"
 import { AccountMenu } from "./account-menu"
 
-const historyItems = [
-  "How to build a modern web app",
-  "Best practices for React hooks",
-  "Understanding TypeScript generics",
-  "Next.js 15 new features",
-  "Tailwind CSS design patterns",
-  "API integration strategies",
-  "Database optimization tips",
-  "Authentication implementation guide",
-  "State management solutions",
-  "Performance optimization techniques",
-  "Responsive design approaches",
-  "SEO best practices 2026",
-  "Component composition patterns",
-  "Error handling in async code",
-  "Testing strategies for frontend",
-  "Deployment workflows explained",
-  "Git branching strategies",
-  "Code review best practices",
-  "Documentation writing tips",
-  "Debugging techniques advanced",
-]
+export type ChatMessage = { role: "user" | "assistant"; content: string }
 
-export function Sidebar({ onNewChat }: { onNewChat?: () => void }) {
+export type ChatSession = {
+  id: string
+  title: string
+  messages: ChatMessage[]
+}
+
+type SidebarProps = {
+  onNewChat?: () => void
+  onLogout?: () => void
+  historyItems?: ChatSession[]
+  onSelectHistory?: (session: ChatSession) => void
+  onShareHistory?: (session: ChatSession) => void
+  onDeleteHistory?: (session: ChatSession) => void
+}
+
+export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistory, onShareHistory, onDeleteHistory }: SidebarProps) {
   const [openPanel, setOpenPanel] = useState<string | null>(null)
   const [pinnedPanel, setPinnedPanel] = useState<string | null>(null)
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [showAccountMenu, setShowAccountMenu] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [theme, setTheme] = useState<"light" | "dark">("light")
+  const [logoSrc, setLogoSrc] = useState("/firelogo.png")
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false)
+  const [email, setEmail] = useState("")
+  const [isSignedIn, setIsSignedIn] = useState(false)
+  const [accountName, setAccountName] = useState("Account")
+  const [accountPicture, setAccountPicture] = useState("")
+
+  useEffect(() => {
+    const source = new window.Image()
+    source.onload = () => {
+      const canvas = document.createElement("canvas")
+      canvas.width = source.naturalWidth
+      canvas.height = source.naturalHeight
+      const context = canvas.getContext("2d")
+      if (!context) return
+
+      context.drawImage(source, 0, 0)
+      const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
+      for (let index = 0; index < imageData.data.length; index += 4) {
+        const red = imageData.data[index]
+        const green = imageData.data[index + 1]
+        const blue = imageData.data[index + 2]
+        const colorRange = Math.max(red, green, blue) - Math.min(red, green, blue)
+        if (colorRange < 12) imageData.data[index + 3] = 0
+      }
+      context.putImageData(imageData, 0, 0)
+      setLogoSrc(canvas.toDataURL("image/png"))
+    }
+    source.src = "/firelogo.png"
+  }, [])
+
+  useEffect(() => {
+    const savedTheme = window.localStorage.getItem("lumen-theme")
+    const nextTheme = savedTheme === "dark" ? "dark" : "light"
+    setTheme(nextTheme)
+    document.documentElement.classList.toggle("dark", nextTheme === "dark")
+
+    const savedAccount = window.localStorage.getItem("lumen-account-created")
+    const authCompleted = new URLSearchParams(window.location.search).get("auth") === "success"
+    const readCookie = (name: string) => {
+      const value = document.cookie.split("; ").find((cookie) => cookie.startsWith(`${name}=`))
+      if (!value) return ""
+      let decoded = value.slice(name.length + 1)
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        try {
+          const next = decodeURIComponent(decoded)
+          if (next === decoded) break
+          decoded = next
+        } catch {
+          break
+        }
+      }
+      return decoded
+    }
+    const savedName = readCookie("lumen-account-name")
+    const savedPicture = readCookie("lumen-account-picture")
+    if (savedName) setAccountName(savedName)
+    if (savedPicture) setAccountPicture(savedPicture)
+    if (authCompleted) {
+      window.localStorage.setItem("lumen-account-created", "true")
+      window.history.replaceState({}, "", window.location.pathname)
+    }
+    setIsSignedIn(savedAccount === "true" || authCompleted)
+    setShowAuthPrompt(savedAccount !== "true" && !authCompleted)
+  }, [])
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", theme === "dark")
+    window.localStorage.setItem("lumen-theme", theme)
+  }, [theme])
 
   const handlePanelChange = (panel: string) => {
     setOpenPanel(panel)
@@ -69,8 +136,27 @@ export function Sidebar({ onNewChat }: { onNewChat?: () => void }) {
 
   const handleNewChat = () => {
     onNewChat?.()
-    setPinnedPanel("history")
-    setOpenPanel("history")
+    setPinnedPanel(null)
+    setOpenPanel(null)
+  }
+
+  const handleAccountAccess = () => {
+    window.localStorage.setItem("lumen-account-created", "true")
+    setIsSignedIn(true)
+    setShowAuthPrompt(false)
+  }
+
+  const handleLogout = () => {
+    window.localStorage.removeItem("lumen-account-created")
+    document.cookie = "lumen-account-name=; Max-Age=0; path=/"
+    document.cookie = "lumen-account-picture=; Max-Age=0; path=/"
+    document.cookie = "lumen-account-email=; Max-Age=0; path=/"
+    setIsSignedIn(false)
+    setAccountName("Account")
+    setAccountPicture("")
+    setShowAccountMenu(false)
+    setShowAuthPrompt(true)
+    onLogout?.()
   }
 
   const handlePinToggle = (panel: string) => {
@@ -86,7 +172,7 @@ export function Sidebar({ onNewChat }: { onNewChat?: () => void }) {
   const sidebarContent = (
     <div
       className={`relative flex border-r border-border bg-background py-4 transition-all duration-300 ease-in-out z-50 h-full ${
-        openPanel ? "w-[280px]" : "w-16"
+        openPanel ? "w-[280px]" : "w-20"
       }`}
       onMouseLeave={() => {
         if (!pinnedPanel) {
@@ -94,12 +180,23 @@ export function Sidebar({ onNewChat }: { onNewChat?: () => void }) {
         }
       }}
     >
-      <div className="flex flex-col h-full w-16 shrink-0 items-center">
+      <div className="flex flex-col h-full w-20 shrink-0 items-center">
         {/* Logo */}
-        <Button variant="ghost" size="icon" className="mb-6 h-10 w-10 shrink-0" aria-label="Lumen home">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-600 text-lg font-bold text-white">
-            L
-          </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleNewChat}
+          className="mb-6 h-16 w-16 shrink-0 overflow-visible rounded-none border-0 bg-transparent p-0 shadow-none hover:bg-transparent hover:shadow-none"
+          aria-label="Lumen home"
+        >
+          <Image
+            src={logoSrc}
+            alt="Lumen flame logo"
+            width={48}
+            height={48}
+            className="h-12 w-12 object-contain"
+            priority
+          />
         </Button>
 
         <Button
@@ -115,6 +212,7 @@ export function Sidebar({ onNewChat }: { onNewChat?: () => void }) {
           <div className="relative mb-2">
             <Button
               variant="ghost"
+              onClick={() => handlePanelChange("history")}
               onMouseEnter={() => handlePanelChange("history")}
               className={`h-10 w-10 shrink-0 mx-auto transition-colors ${
                 openPanel === "history"
@@ -188,36 +286,42 @@ export function Sidebar({ onNewChat }: { onNewChat?: () => void }) {
         </nav>
 
         <div className="flex flex-col gap-1 pt-4 items-center">
+          <div className="relative mb-1">
+            <Button
+              variant="ghost"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              aria-label="Toggle theme"
+              className="h-10 w-10 shrink-0 text-muted-foreground hover:text-foreground hover:bg-accent"
+            >
+              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
+            <div className="text-[9px] text-muted-foreground text-center mt-1 font-medium">
+              {theme === "dark" ? "Light" : "Dark"}
+            </div>
+          </div>
+
           <Button
             variant="ghost"
             onClick={() => setShowAccountMenu(!showAccountMenu)}
             className="h-10 w-10 shrink-0 text-muted-foreground hover:text-foreground hover:bg-accent p-0"
           >
-            <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full overflow-visible ring-2 ring-primary/60">
-              <div className="h-9 w-9 rounded-full overflow-hidden">
-                <Image
-                  src="/images/user-avatar.jpg"
-                  alt="Profile"
-                  width={36}
-                  height={36}
-                  className="object-cover"
-                />
-              </div>
-              <span className="absolute -bottom-1 -right-1 text-[7px] font-bold bg-primary text-primary-foreground px-1 py-0.5 rounded">
-                pro
-              </span>
+            <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full overflow-visible ring-2 ring-primary/60 bg-muted">
+              {accountPicture ? (
+                <img src={accountPicture} alt="Google profile" className="h-9 w-9 rounded-full object-cover" />
+              ) : isSignedIn ? (
+                <span className="text-sm font-semibold text-muted-foreground">{accountName.charAt(0).toUpperCase()}</span>
+              ) : (
+                <UserCircle className="h-7 w-7 text-muted-foreground" aria-hidden="true" />
+              )}
+              {isSignedIn && (
+                <span className="absolute -bottom-1 -right-1 text-[7px] font-bold bg-primary text-primary-foreground px-1 py-0.5 rounded">
+                  pro
+                </span>
+              )}
             </div>
           </Button>
           <div className="text-[9px] text-muted-foreground text-center font-medium">Account</div>
 
-          <Button
-            variant="ghost"
-            onClick={() => setShowUpgradeModal(true)}
-            className="h-10 w-10 shrink-0 text-muted-foreground hover:text-foreground hover:bg-accent"
-          >
-            <ArrowUpFromDot className="h-5 w-5 shrink-0" />
-          </Button>
-          <div className="text-[9px] text-muted-foreground text-center font-medium">Upgrade</div>
         </div>
       </div>
 
@@ -243,14 +347,39 @@ export function Sidebar({ onNewChat }: { onNewChat?: () => void }) {
               </div>
               <ScrollArea className="flex-1 px-1.5">
                 <div className="space-y-0 pb-2">
-                  {historyItems.map((item, index) => (
-                    <button
-                      key={index}
-                      className="group w-full text-left px-2 py-1.5 text-[13px] leading-tight text-foreground hover:bg-accent rounded transition-all duration-200 relative"
+                  {historyItems.length === 0 && (
+                    <p className="px-2 py-4 text-xs text-muted-foreground">No saved chats yet.</p>
+                  )}
+                  {historyItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="group relative flex w-full items-center rounded transition-all duration-200 hover:bg-accent"
                     >
-                      <span className="block truncate pr-4">{item}</span>
-                      <span className="absolute right-2 top-1.5 bottom-1.5 w-8 bg-gradient-to-l from-background via-background to-transparent group-hover:from-accent group-hover:via-accent pointer-events-none transition-colors duration-200" />
-                    </button>
+                      <button
+                        onClick={() => onSelectHistory?.(item)}
+                        className="min-w-0 flex-1 px-2 py-1.5 pr-14 text-left text-[13px] leading-tight text-foreground"
+                      >
+                        <span className="block truncate pr-1">{item.title}</span>
+                      </button>
+                      <div className="invisible absolute right-1 z-10 flex items-center gap-0.5 rounded bg-accent px-0.5 opacity-0 transition-opacity group-hover:visible group-hover:opacity-100">
+                        <button
+                          onClick={() => onShareHistory?.(item)}
+                          aria-label={`Share ${item.title}`}
+                          title="Share chat"
+                          className="rounded p-1 text-muted-foreground hover:bg-background hover:text-foreground"
+                        >
+                          <Share2 className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() => onDeleteHistory?.(item)}
+                          aria-label={`Delete ${item.title}`}
+                          title="Delete chat"
+                          className="rounded p-1 text-muted-foreground hover:bg-background hover:text-red-500"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </ScrollArea>
@@ -471,8 +600,65 @@ export function Sidebar({ onNewChat }: { onNewChat?: () => void }) {
   return (
     <>
       {sidebarContent}
-      <AccountMenu isOpen={showAccountMenu} onClose={() => setShowAccountMenu(false)} />
-      <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
+      <AccountMenu
+        isOpen={showAccountMenu}
+        onClose={() => setShowAccountMenu(false)}
+        accountName={accountName}
+        accountPicture={accountPicture}
+        onLogout={handleLogout}
+      />
+      {showAuthPrompt && (
+        <div className="fixed bottom-5 right-5 z-[60] w-[320px] rounded-xl border border-border bg-card p-5 text-card-foreground shadow-2xl animate-in fade-in slide-in-from-right-2 duration-300">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowAuthPrompt(false)}
+            aria-label="Close sign in prompt"
+            className="absolute right-2 top-2 h-7 w-7 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+          <div className="mb-5 text-center">
+            <Image
+              src={logoSrc}
+              alt="Lumen flame logo"
+              width={48}
+              height={48}
+              className="mx-auto mb-3 h-12 w-12 object-contain"
+            />
+            <h2 className="text-base font-semibold">Log in or sign up for free</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Save and sync your searches</p>
+          </div>
+          <div className="space-y-2">
+            <Button onClick={() => { window.location.href = "/api/auth/google" }} className="w-full bg-foreground text-background hover:bg-foreground/90">
+              Continue with Google
+            </Button>
+            <Button onClick={handleAccountAccess} variant="secondary" className="w-full">
+              Continue with Apple
+            </Button>
+            <div className="my-4 border-t border-border" />
+            <input
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="Enter your email"
+              aria-label="Email address"
+              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
+            />
+            <Button
+              onClick={handleAccountAccess}
+              disabled={!email.trim()}
+              variant="secondary"
+              className="w-full"
+            >
+              Continue with email
+            </Button>
+            <button onClick={handleAccountAccess} className="w-full pt-3 text-xs text-primary hover:underline">
+              Single sign-on (SSO)
+            </button>
+          </div>
+        </div>
+      )}
     </>
   )
 }
