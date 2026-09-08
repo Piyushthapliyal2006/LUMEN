@@ -218,7 +218,7 @@ export function Search() {
         onDeleteHistory={handleDeleteHistory}
       />
 
-      <main className="flex flex-1 flex-col overflow-hidden bg-background">
+      <main className="flex flex-1 flex-col overflow-hidden bg-transparent">
         <div className="flex h-screen flex-col">
           {hasConversation ? (
             <section className="flex-1 overflow-y-auto px-4 pb-4 pt-6" aria-live="polite">
