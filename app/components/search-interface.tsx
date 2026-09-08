@@ -218,7 +218,7 @@ export function Search() {
         onDeleteHistory={handleDeleteHistory}
       />
 
-      <main className="flex flex-1 flex-col overflow-hidden bg-transparent">
+      <main className="flex flex-1 flex-col overflow-hidden bg-background">
         <div className="flex h-screen flex-col">
           {hasConversation ? (
             <section className="flex-1 overflow-y-auto px-4 pb-4 pt-6" aria-live="polite">
@@ -312,7 +312,7 @@ export function Search() {
               <div className="w-full max-w-4xl space-y-8 md:space-y-12">
                 <header className="flex items-center justify-center text-center">
                   <h1
-                    className="relative z-10 leading-[0.72] tracking-[-0.06em] text-white/95 drop-shadow-[0_2px_14px_rgba(0,0,0,0.9)] text-[2.7rem] sm:text-[3.6rem] md:text-[5.1rem] lg:text-[6rem]"
+                    className="leading-[0.72] tracking-[-0.06em] text-foreground text-[2.7rem] sm:text-[3.6rem] md:text-[5.1rem] lg:text-[6rem]"
                     style={{
                       fontFamily: '"Canela-LightItalic", "Canela", "Cormorant Garamond", "Times New Roman", serif',
                       fontStyle: "italic",
