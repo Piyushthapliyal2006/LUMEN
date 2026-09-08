@@ -5,6 +5,7 @@ import { WidgetCards } from "./widget-cards"
 import { useEffect, useState } from "react"
 import { Check, Copy, Pencil } from "lucide-react"
 import type { ReactNode } from "react"
+import { AiComparison, type Provider } from "./ai-comparison"
 
 type MessageAttachment = { name: string; type: string; preview?: string }
 type MessageSource = { title: string; url: string; domain: string }
@@ -36,6 +37,11 @@ export function Search() {
   const [editingMessage, setEditingMessage] = useState<number | null>(null)
   const [editText, setEditText] = useState("")
   const [copiedMessage, setCopiedMessage] = useState<number | null>(null)
+  const [aiTools, setAiTools] = useState<Provider[]>([])
+
+  const addAiTool = (provider: Provider) => {
+    setAiTools((current) => current.includes(provider) ? current : [...current, provider])
+  }
 
   useEffect(() => {
     const savedConversationId = window.sessionStorage.getItem("lumen-conversation-id") || crypto.randomUUID()

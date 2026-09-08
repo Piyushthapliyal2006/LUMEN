@@ -54,9 +54,10 @@ type SidebarProps = {
   onSelectHistory?: (session: ChatSession) => void
   onShareHistory?: (session: ChatSession) => void
   onDeleteHistory?: (session: ChatSession) => void
+  onAddAiTool?: (tool: "gemini" | "mistral" | "huggingface") => void
 }
 
-export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistory, onShareHistory, onDeleteHistory }: SidebarProps) {
+export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistory, onShareHistory, onDeleteHistory, onAddAiTool }: SidebarProps) {
   const [openPanel, setOpenPanel] = useState<string | null>(null)
   const [pinnedPanel, setPinnedPanel] = useState<string | null>(null)
   const [showAccountMenu, setShowAccountMenu] = useState(false)
@@ -431,8 +432,9 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
                     key={name}
                     type="button"
                     className="flex w-full items-center gap-2.5 rounded px-2.5 py-2 text-left text-[13px] transition-colors hover:bg-accent"
-                    aria-label={`${name} plugin`}
-                  >
+  aria-label={`${name} plugin`}
+  onClick={() => name !== "ChatGPT" && onAddAiTool?.(name === "Gemini" ? "gemini" : name === "Mistral" ? "mistral" : "huggingface")}
+  >
                     <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
                     <span className="font-normal">{name}</span>
                   </button>
