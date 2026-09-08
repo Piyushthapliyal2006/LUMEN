@@ -27,6 +27,9 @@ import {
   Menu,
   X,
   Sparkles,
+  Bot,
+  MessageCircle,
+  BrainCircuit,
   Moon,
   Sun,
   UserCircle,
@@ -413,6 +416,27 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
                   <Star className="h-4 w-4 shrink-0" />
                   <span className="font-normal">Top</span>
                 </button>
+              </div>
+              <div className="px-3 pb-2 pt-1">
+                <h3 className="px-1 text-[11px] font-medium text-muted-foreground">AI tools</h3>
+              </div>
+              <div className="space-y-0.5 px-1.5">
+                {[
+                  { name: "Gemini", icon: Sparkles },
+                  { name: "ChatGPT", icon: MessageCircle },
+                  { name: "Hugging Face", icon: Bot },
+                  { name: "Mistral", icon: BrainCircuit },
+                ].map(({ name, icon: Icon }) => (
+                  <button
+                    key={name}
+                    type="button"
+                    className="flex w-full items-center gap-2.5 rounded px-2.5 py-2 text-left text-[13px] transition-colors hover:bg-accent"
+                    aria-label={`${name} plugin`}
+                  >
+                    <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span className="font-normal">{name}</span>
+                  </button>
+                ))}
               </div>
             </div>
           )}
