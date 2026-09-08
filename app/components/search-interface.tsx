@@ -218,6 +218,7 @@ export function Search() {
       <Sidebar
         onNewChat={handleNewChat}
         onLogout={handleLogout}
+        onAddAiTool={addAiTool}
         historyItems={history}
         onSelectHistory={handleSelectHistory}
         onShareHistory={handleShareHistory}
@@ -336,6 +337,10 @@ export function Search() {
                 {showWidgets && <WidgetCards />}
               </div>
             </div>
+          )}
+
+          {aiTools.length > 0 && (
+            <AiComparison providers={aiTools} messages={messages} />
           )}
 
           {hasConversation && (
