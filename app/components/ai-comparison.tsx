@@ -15,6 +15,7 @@ export function AiComparison({ providers, messages }: { providers: Provider[]; m
   const [widths, setWidths] = useState<Record<string, number>>({})
   const [removed, setRemoved] = useState<Provider[]>([])
   const submittedQueries = useRef<Record<string, string>>({})
+  const requests = useRef<Record<string, AbortController>>({})
   const visible = providers.filter((provider) => !removed.includes(provider))
   const latestQuery = [...messages].reverse().find((message) => message.role === "user")?.content.trim() || ""
 
@@ -22,14 +23,23 @@ export function AiComparison({ providers, messages }: { providers: Provider[]; m
     const query = value.trim()
     if (!query) return
     submittedQueries.current[provider] = query
+    requests.current[provider]?.abort()
+    const controller = new AbortController()
+    requests.current[provider] = controller
+    const timeout = window.setTimeout(() => controller.abort(), 30000)
     const context = [...messages, { role: "user" as const, content: query }]
     setLoading((current) => ({ ...current, [provider]: true }))
     setAnswers((current) => ({ ...current, [provider]: "" }))
     try {
-      const response = await fetch("/api/compare", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ provider, messages: context }) })
+      const response = await fetch("/api/compare", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ provider, messages: context }), signal: controller.signal })
       const data = await response.json()
       setAnswers((current) => ({ ...current, [provider]: response.ok ? data.text : data.error }))
-    } catch { setAnswers((current) => ({ ...current, [provider]: "Unable to reach this provider." })) } finally { setLoading((current) => ({ ...current, [provider]: false })) }
+    } catch (error) {
+      if ((error as Error).name !== "AbortError") setAnswers((current) => ({ ...current, [provider]: "Unable to reach this provider." }))
+    } finally {
+      window.clearTimeout(timeout)
+      setLoading((current) => ({ ...current, [provider]: false }))
+    }
   }
 
   useEffect(() => {
