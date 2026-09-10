@@ -12,7 +12,7 @@ async function callProvider(provider: Provider, messages: ChatMessage[]) {
   const prompt = messages.map((message) => `${message.role === "user" ? "User" : "Assistant"}: ${message.content}`).join("\n\n")
   if (provider === "gemini") {
     if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) throw new Error("Gemini is not configured")
-    return (await generateText({ model: google("gemini-2.5-flash"), system, prompt, maxOutputTokens: 700 })).text
+    return (await generateText({ model: google("gemini-3.6-flash"), system, prompt, maxOutputTokens: 900 })).text
   }
   const key = provider === "mistral" ? process.env.MISTRAL_API_KEY : process.env.HUGGINGFACE_API_KEY
   if (!key) throw new Error(`${provider === "mistral" ? "Mistral" : "Hugging Face"} is not configured`)

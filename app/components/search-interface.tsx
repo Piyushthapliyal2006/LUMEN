@@ -228,10 +228,8 @@ export function Search() {
       <main className="flex flex-1 flex-col overflow-hidden bg-background">
         <div className="flex h-screen flex-col">
           {hasConversation ? (
-            <section className="flex min-h-0 flex-1 flex-col overflow-hidden px-3 pb-3 pt-4" aria-live="polite">
-              <div className={`mx-auto flex min-h-0 w-full gap-3 ${aiTools.length > 0 ? "max-w-none flex-1 flex-col md:flex-row" : "max-w-3xl flex-1"}`}>
-                <div className={`min-h-0 overflow-y-auto ${aiTools.length > 0 ? "flex-1 rounded-2xl border border-border/70 bg-background/70 p-4 md:min-w-0" : "w-full"}`}>
-                  <div className="mx-auto w-full max-w-3xl space-y-4">
+            <section className="flex-1 overflow-y-auto px-4 pb-4 pt-6" aria-live="polite">
+              <div className="mx-auto w-full max-w-3xl space-y-4">
                 {messages.map((message, index) => (
                   <div
                     key={`${message.role}-${index}`}
@@ -314,14 +312,6 @@ export function Search() {
                     )}
                   </div>
                 ))}
-                  </div>
-                </div>
-                {aiTools.length > 0 && (
-                  <div className="border-t border-border/40 pt-3">
-                    <SearchBar key={chatKey} onSearch={handleSearch} />
-                  </div>
-                )}
-                {aiTools.length > 0 && <AiComparison providers={aiTools} messages={messages} />}
               </div>
             </section>
           ) : (
@@ -349,7 +339,11 @@ export function Search() {
             </div>
           )}
 
-          {hasConversation && aiTools.length === 0 && (
+          {aiTools.length > 0 && (
+            <AiComparison providers={aiTools} messages={messages} />
+          )}
+
+          {hasConversation && (
             <div className="sticky bottom-0 border-t border-border/40 bg-background/85 px-4 pb-10 pt-3 backdrop-blur-sm">
               <div className="mx-auto w-full max-w-3xl">
                 <SearchBar key={chatKey} onSearch={handleSearch} />
