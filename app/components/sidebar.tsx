@@ -198,11 +198,16 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
           onClick={() => setSidebarExpanded((expanded) => !expanded)}
           onMouseEnter={() => setLogoHovered(true)}
           onMouseLeave={() => setLogoHovered(false)}
-          className={`mb-5 h-9 shrink-0 overflow-visible rounded-md border-0 p-0 shadow-none transition-all hover:bg-accent hover:shadow-none ${hasMounted && sidebarExpanded ? "w-9 bg-accent" : "w-9 bg-transparent"}`}
+          className={`mb-5 h-9 shrink-0 overflow-visible rounded-md border-0 p-0 shadow-none transition-all hover:bg-accent hover:shadow-none ${sidebarExpanded ? "w-full justify-between px-2" : "w-9 bg-transparent"}`}
           aria-label={hasMounted && sidebarExpanded ? "Collapse navigation" : "Expand navigation"}
           title={hasMounted && sidebarExpanded ? "Collapse navigation" : "Expand navigation"}
         >
-          {hasMounted && (logoHovered || sidebarExpanded) ? (
+          {sidebarExpanded ? (
+            <>
+              <span className="text-sm font-semibold text-foreground">Lumen</span>
+              <PanelLeft className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+            </>
+          ) : hasMounted && logoHovered ? (
             <PanelLeft className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
           ) : (
             <Image
@@ -226,12 +231,13 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
           {sidebarExpanded && <span className="text-sm">New chat</span>}
         </Button>
 
-        <nav className="flex flex-1 flex-col gap-1">
-          <div className="relative mb-2">
+        <nav className="flex flex-1 flex-col gap-0.5">
+          <div className="relative mb-1">
             <Button
               variant="ghost"
               onClick={() => handlePanelChange("history")}
-              onMouseEnter={() => handlePanelChange("history")}
+              title={sidebarExpanded ? undefined : "History"}
+              aria-label="History"
               className={`h-10 shrink-0 transition-colors ${sidebarExpanded ? "w-full justify-start px-0" : "mx-auto w-10 justify-center"} ${
                 openPanel === "history"
                   ? "text-foreground bg-accent"
@@ -244,10 +250,11 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
             <span className="sr-only">History</span>
           </div>
 
-          <div className="relative mb-2">
+          <div className="relative mb-1">
             <Button
               variant="ghost"
-              onMouseEnter={() => handlePanelChange("plugins")}
+              title={sidebarExpanded ? undefined : "Plugins"}
+              aria-label="Plugins"
               className={`h-10 shrink-0 transition-colors ${sidebarExpanded ? "w-full justify-start px-0" : "mx-auto w-10 justify-center"} ${
                 openPanel === "plugins"
                   ? "text-foreground bg-accent"
@@ -260,10 +267,11 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
             <span className="sr-only">Plugins</span>
           </div>
 
-          <div className="relative mb-2">
+          <div className="relative mb-1">
             <Button
               variant="ghost"
-              onMouseEnter={() => handlePanelChange("spaces")}
+              title={sidebarExpanded ? undefined : "Spaces"}
+              aria-label="Spaces"
               className={`h-10 shrink-0 transition-colors ${sidebarExpanded ? "w-full justify-start px-0" : "mx-auto w-10 justify-center"} ${
                 openPanel === "spaces"
                   ? "text-foreground bg-accent"
@@ -276,10 +284,11 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
             <span className="sr-only">Spaces</span>
           </div>
 
-          <div className="relative mb-2">
+          <div className="relative mb-1">
             <Button
               variant="ghost"
-              onMouseEnter={() => handlePanelChange("more")}
+              title={sidebarExpanded ? undefined : "More"}
+              aria-label="More"
               className={`h-10 shrink-0 transition-colors ${sidebarExpanded ? "w-full justify-start px-0" : "mx-auto w-10 justify-center"} ${
                 openPanel === "more"
                   ? "text-foreground bg-accent"
@@ -292,10 +301,11 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
             <span className="sr-only">More</span>
           </div>
 
-          <div className="relative mb-2">
+          <div className="relative mb-1">
             <Button
               variant="ghost"
-              onMouseEnter={() => handlePanelChange("notifications")}
+              title={sidebarExpanded ? undefined : "Notifications"}
+              aria-label="Notifications"
               className={`h-10 shrink-0 transition-colors ${sidebarExpanded ? "w-full justify-start px-0" : "mx-auto w-10 justify-center"} ${
                 openPanel === "notifications"
                   ? "text-foreground bg-accent"
