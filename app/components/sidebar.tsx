@@ -181,6 +181,10 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
     }
   }
 
+  if (!hasMounted) {
+    return <div className="h-full w-12 shrink-0 border-r border-border bg-background" aria-hidden="true" />
+  }
+
   const sidebarContent = (
     <div
       className="relative flex w-12 shrink-0 border-r border-border bg-background py-3 transition-colors duration-200 ease-in-out z-50 h-full"
