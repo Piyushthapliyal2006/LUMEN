@@ -1,6 +1,12 @@
 "use client"
-import { ChatSession, Sidebar } from "./sidebar"
+import dynamic from "next/dynamic"
+import type { ChatSession } from "./sidebar"
 import { SearchBar } from "./search-bar"
+
+const Sidebar = dynamic(() => import("./sidebar").then((module) => module.Sidebar), {
+  ssr: false,
+  loading: () => <div className="h-full w-12 shrink-0 border-r border-border bg-background" aria-hidden="true" />,
+})
 import { WidgetCards } from "./widget-cards"
 import { useEffect, useState } from "react"
 import { Check, Copy, Pencil } from "lucide-react"
