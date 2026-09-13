@@ -175,30 +175,28 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
 
   const sidebarContent = (
     <div
-      className={`relative flex border-r border-border bg-background py-4 transition-all duration-300 ease-in-out z-50 h-full ${
-        openPanel ? "w-[280px]" : "w-20"
-      }`}
+      className="relative flex w-12 shrink-0 border-r border-border bg-background py-3 transition-colors duration-200 ease-in-out z-50 h-full"
       onMouseLeave={() => {
         if (!pinnedPanel) {
           setOpenPanel(null)
         }
       }}
     >
-      <div className="flex flex-col h-full w-20 shrink-0 items-center">
+      <div className="flex flex-col h-full w-12 shrink-0 items-center">
         {/* Logo */}
         <Button
           variant="ghost"
           size="icon"
           onClick={handleNewChat}
-          className="mb-6 h-16 w-16 shrink-0 overflow-visible rounded-none border-0 bg-transparent p-0 shadow-none hover:bg-transparent hover:shadow-none"
+          className="mb-5 h-9 w-9 shrink-0 overflow-visible rounded-none border-0 bg-transparent p-0 shadow-none hover:bg-transparent hover:shadow-none"
           aria-label="Lumen home"
         >
           <Image
             src={logoSrc}
             alt="Lumen flame logo"
-            width={48}
-            height={48}
-            className="h-12 w-12 object-contain"
+            width={28}
+            height={28}
+            className="h-7 w-7 object-contain"
             priority
           />
         </Button>
@@ -226,7 +224,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
             >
               <Clock className="h-5 w-5" />
             </Button>
-            <div className="text-[9px] text-muted-foreground text-center mt-1 font-medium">History</div>
+            <span className="sr-only">History</span>
           </div>
 
           <div className="relative mb-2">
@@ -241,7 +239,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
             >
               <Sparkles className="h-5 w-5" />
             </Button>
-            <div className="text-[9px] text-muted-foreground text-center mt-1 font-medium">Plugins</div>
+            <span className="sr-only">Plugins</span>
           </div>
 
           <div className="relative mb-2">
@@ -256,7 +254,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
             >
               <Grid3x3 className="h-5 w-5" />
             </Button>
-            <div className="text-[9px] text-muted-foreground text-center mt-1 font-medium">Spaces</div>
+            <span className="sr-only">Spaces</span>
           </div>
 
           <div className="relative mb-2">
@@ -271,7 +269,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
             >
               <MoreHorizontal className="h-5 w-5" />
             </Button>
-            <div className="text-[9px] text-muted-foreground text-center mt-1 font-medium">More</div>
+            <span className="sr-only">More</span>
           </div>
 
           <div className="relative mb-2">
@@ -299,9 +297,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
             >
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
-            <div className="text-[9px] text-muted-foreground text-center mt-1 font-medium">
-              {theme === "dark" ? "Light" : "Dark"}
-            </div>
+            <span className="sr-only">{theme === "dark" ? "Light mode" : "Dark mode"}</span>
           </div>
 
           <Button
@@ -324,13 +320,13 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
               )}
             </div>
           </Button>
-          <div className="text-[9px] text-muted-foreground text-center font-medium">Account</div>
+          <span className="sr-only">Account</span>
 
         </div>
       </div>
 
       {openPanel && (
-        <div key={openPanel} className="w-[190px] bg-background border-r border-border">
+        <div key={openPanel} className="absolute left-full top-0 z-50 h-full w-[190px] border-r border-border bg-background shadow-xl">
           {openPanel === "history" && (
             <div className="flex flex-col h-full animate-in fade-in duration-300">
               <div className="flex items-center justify-between px-3 py-2.5">
