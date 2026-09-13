@@ -27,9 +27,13 @@ import {
   Menu,
   X,
   Sparkles,
+  Bot,
+  MessageCircle,
+  BrainCircuit,
   Moon,
   Sun,
   UserCircle,
+  PanelLeft,
 } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -51,13 +55,20 @@ type SidebarProps = {
   onSelectHistory?: (session: ChatSession) => void
   onShareHistory?: (session: ChatSession) => void
   onDeleteHistory?: (session: ChatSession) => void
+  onAddAiTool?: (tool: "gemini" | "mistral" | "huggingface") => void
+  onOpenSpaces?: () => void
 }
 
-export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistory, onShareHistory, onDeleteHistory }: SidebarProps) {
+export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistory, onShareHistory, onDeleteHistory, onAddAiTool, onOpenSpaces }: SidebarProps) {
   const [openPanel, setOpenPanel] = useState<string | null>(null)
   const [pinnedPanel, setPinnedPanel] = useState<string | null>(null)
   const [showAccountMenu, setShowAccountMenu] = useState(false)
+  const [spaces, setSpaces] = useState<string[]>(["My Space"])
+  const [newSpaceName, setNewSpaceName] = useState("")
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [sidebarExpanded, setSidebarExpanded] = useState(false)
+  const [logoHovered, setLogoHovered] = useState(false)
+  const [hasMounted, setHasMounted] = useState(false)
   const [theme, setTheme] = useState<"light" | "dark">("light")
   const [logoSrc, setLogoSrc] = useState("/firelogo.png")
   const [showAuthPrompt, setShowAuthPrompt] = useState(false)
@@ -65,6 +76,10 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
   const [isSignedIn, setIsSignedIn] = useState(false)
   const [accountName, setAccountName] = useState("Account")
   const [accountPicture, setAccountPicture] = useState("")
+
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
 
   useEffect(() => {
     const source = new window.Image()
@@ -171,141 +186,183 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
 
   const sidebarContent = (
     <div
-      className={`relative flex border-r border-border bg-background py-4 transition-all duration-300 ease-in-out z-50 h-full ${
-        openPanel ? "w-[280px]" : "w-20"
-      }`}
+      className={`relative flex shrink-0 border-r border-border bg-background py-3 transition-[width] duration-200 ease-in-out z-50 h-full ${sidebarExpanded ? "w-60" : "w-12"}`}
       onMouseLeave={() => {
         if (!pinnedPanel) {
           setOpenPanel(null)
         }
       }}
     >
-      <div className="flex flex-col h-full w-20 shrink-0 items-center">
+      <div className={`flex h-full shrink-0 flex-col ${sidebarExpanded ? "w-60 items-stretch px-3" : "w-12 items-center"}`}>
         {/* Logo */}
         <Button
           variant="ghost"
           size="icon"
-          onClick={handleNewChat}
-          className="mb-6 h-16 w-16 shrink-0 overflow-visible rounded-none border-0 bg-transparent p-0 shadow-none hover:bg-transparent hover:shadow-none"
-          aria-label="Lumen home"
+          onClick={() => setSidebarExpanded((expanded) => !expanded)}
+          onMouseEnter={() => setLogoHovered(true)}
+          onMouseLeave={() => setLogoHovered(false)}
+          className={`mb-5 h-9 shrink-0 overflow-visible rounded-md border-0 p-0 shadow-none transition-all hover:bg-accent hover:shadow-none ${sidebarExpanded ? "w-full justify-between px-2" : "w-9 bg-transparent"}`}
+          aria-label={hasMounted && sidebarExpanded ? "Collapse navigation" : "Expand navigation"}
+          title={hasMounted && sidebarExpanded ? "Collapse navigation" : "Expand navigation"}
         >
-          <Image
-            src={logoSrc}
-            alt="Lumen flame logo"
-            width={48}
-            height={48}
-            className="h-12 w-12 object-contain"
-            priority
-          />
+          {sidebarExpanded ? (
+            <>
+              <span className="text-sm font-bold text-foreground">Lumen</span>
+              <PanelLeft className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+            </>
+          ) : hasMounted && logoHovered ? (
+            <PanelLeft className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+          ) : (
+            <Image
+              src={logoSrc}
+              alt="Lumen flame logo"
+              width={28}
+              height={28}
+              className="h-7 w-7 object-contain"
+              priority
+            />
+          )}
         </Button>
 
         <Button
           variant="ghost"
           onClick={handleNewChat}
           aria-label="Open a new chat"
-          className="mb-8 h-10 w-10 shrink-0 rounded-full bg-muted/50 text-muted-foreground hover:bg-accent hover:text-foreground"
+          className={`mb-8 h-10 shrink-0 rounded-full bg-muted/50 text-muted-foreground hover:bg-accent hover:text-foreground ${sidebarExpanded ? "w-full justify-start gap-3 px-0" : "w-10 justify-center"}`}
         >
           <Plus className="h-5 w-5 shrink-0" />
+          {sidebarExpanded && <span className="text-sm">New chat</span>}
         </Button>
 
-        <nav className="flex flex-1 flex-col gap-1">
-          <div className="relative mb-2">
+        <nav className="flex flex-1 flex-col gap-0.5">
+          <div className="relative order-5 mb-1">
             <Button
               variant="ghost"
               onClick={() => handlePanelChange("history")}
-              onMouseEnter={() => handlePanelChange("history")}
-              className={`h-10 w-10 shrink-0 mx-auto transition-colors ${
+              title={sidebarExpanded ? undefined : "History"}
+              aria-label="History"
+              className={`h-10 shrink-0 transition-colors ${sidebarExpanded ? "w-full justify-start px-0" : "mx-auto w-10 justify-center"} ${
                 openPanel === "history"
                   ? "text-foreground bg-accent"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent"
               }`}
             >
-              <Clock className="h-5 w-5" />
-            </Button>
-            <div className="text-[9px] text-muted-foreground text-center mt-1 font-medium">History</div>
+<Clock className="h-5 w-5 shrink-0" />
+                {sidebarExpanded && <span className="ml-3 text-sm font-medium">History</span>}
+  </Button>
+            <span className="sr-only">History</span>
+            {sidebarExpanded && (
+              <div className="ml-8 max-h-48 overflow-y-auto pb-1 pt-1">
+                {historyItems.slice(0, 8).map((item) => (
+                  <button key={item.id} type="button" draggable onDragStart={(event) => { event.dataTransfer.effectAllowed = "copy"; event.dataTransfer.setData("text/lumen-history", item.title) }} onDragEnd={() => undefined} onClick={() => onSelectHistory?.(item)} className="block w-full truncate rounded-md px-2 py-1.5 text-left text-sm leading-5 text-foreground/85 hover:bg-accent hover:text-foreground">
+                    {item.title}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="relative mb-2">
+          <div className="relative order-1 mb-1">
             <Button
               variant="ghost"
-              onMouseEnter={() => handlePanelChange("plugins")}
-              className={`h-10 w-10 shrink-0 mx-auto transition-colors ${
+              onClick={() => handlePanelChange("plugins")}
+              title={sidebarExpanded ? undefined : "Plugins"}
+              aria-label="Plugins"
+              className={`h-10 shrink-0 transition-colors ${sidebarExpanded ? "w-full justify-start px-0" : "mx-auto w-10 justify-center"} ${
                 openPanel === "plugins"
                   ? "text-foreground bg-accent"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent"
               }`}
             >
-              <Sparkles className="h-5 w-5" />
-            </Button>
-            <div className="text-[9px] text-muted-foreground text-center mt-1 font-medium">Plugins</div>
+<Sparkles className="h-5 w-5 shrink-0" />
+                {sidebarExpanded && <span className="ml-3 text-sm">Plugins</span>}
+  </Button>
+            <span className="sr-only">Plugins</span>
+            {sidebarExpanded && openPanel === "plugins" && (
+              <div className="ml-8 space-y-0.5 pb-1 pt-0.5">
+                {["Gemini", "ChatGPT", "Hugging Face", "Mistral"].map((name) => (
+                  <button key={name} type="button" onClick={() => name === "Mistral" && onAddAiTool?.("mistral")} className="block w-full rounded px-2 py-1 text-left text-[11px] text-muted-foreground hover:bg-accent hover:text-foreground">
+                    {name}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="relative mb-2">
-            <Button
+          <div className="relative order-2 mb-1">
+              <Button
               variant="ghost"
-              onMouseEnter={() => handlePanelChange("spaces")}
-              className={`h-10 w-10 shrink-0 mx-auto transition-colors ${
+              onClick={() => { handlePanelChange("spaces"); onOpenSpaces?.() }}
+              title={sidebarExpanded ? undefined : "Spaces"}
+              aria-label="Spaces"
+              className={`h-10 shrink-0 transition-colors ${sidebarExpanded ? "w-full justify-start px-0" : "mx-auto w-10 justify-center"} ${
                 openPanel === "spaces"
                   ? "text-foreground bg-accent"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent"
               }`}
             >
-              <Grid3x3 className="h-5 w-5" />
-            </Button>
-            <div className="text-[9px] text-muted-foreground text-center mt-1 font-medium">Spaces</div>
+<Grid3x3 className="h-5 w-5 shrink-0" />
+                {sidebarExpanded && <span className="ml-3 text-sm">Spaces</span>}
+  </Button>
+            <span className="sr-only">Spaces</span>
+            {sidebarExpanded && openPanel === "spaces" && (
+              <div className="ml-8 space-y-1 pb-1 pt-0.5">
+                {spaces.map((space) => (
+                  <div key={space} className="flex items-center gap-1">
+                    <button type="button" className="min-w-0 flex-1 truncate rounded px-2 py-1 text-left text-[11px] text-muted-foreground hover:bg-accent hover:text-foreground">{space}</button>
+                    <button type="button" aria-label={`Delete ${space}`} onClick={() => setSpaces((current) => current.filter((item) => item !== space))} className="rounded px-1 text-[10px] text-muted-foreground hover:bg-accent hover:text-destructive">×</button>
+                  </div>
+                ))}
+                <form onSubmit={(event) => { event.preventDefault(); const name = newSpaceName.trim(); if (name) { setSpaces((current) => [...current, name]); setNewSpaceName("") } }} className="flex gap-1">
+                  <input value={newSpaceName} onChange={(event) => setNewSpaceName(event.target.value)} placeholder="New space" className="min-w-0 flex-1 rounded border border-border bg-background px-2 py-1 text-[11px] outline-none" />
+                  <button type="submit" className="rounded bg-muted px-1.5 text-[11px] hover:bg-accent">Add</button>
+                </form>
+              </div>
+            )}
           </div>
 
-          <div className="relative mb-2">
+          <div className="relative order-3 mb-1">
             <Button
               variant="ghost"
-              onMouseEnter={() => handlePanelChange("more")}
-              className={`h-10 w-10 shrink-0 mx-auto transition-colors ${
+              title={sidebarExpanded ? undefined : "More"}
+              aria-label="More"
+              className={`h-10 shrink-0 transition-colors ${sidebarExpanded ? "w-full justify-start px-0" : "mx-auto w-10 justify-center"} ${
                 openPanel === "more"
                   ? "text-foreground bg-accent"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent"
               }`}
             >
-              <MoreHorizontal className="h-5 w-5" />
-            </Button>
-            <div className="text-[9px] text-muted-foreground text-center mt-1 font-medium">More</div>
+<MoreHorizontal className="h-5 w-5 shrink-0" />
+                {sidebarExpanded && <span className="ml-3 text-sm">More</span>}
+  </Button>
+            <span className="sr-only">More</span>
           </div>
 
-          <div className="relative mb-2">
+          <div className="relative order-4 mb-1">
             <Button
               variant="ghost"
-              onMouseEnter={() => handlePanelChange("notifications")}
-              className={`h-10 w-10 shrink-0 transition-colors ${
+              title={sidebarExpanded ? undefined : "Notifications"}
+              aria-label="Notifications"
+              className={`h-10 shrink-0 transition-colors ${sidebarExpanded ? "w-full justify-start px-0" : "mx-auto w-10 justify-center"} ${
                 openPanel === "notifications"
                   ? "text-foreground bg-accent"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent"
               }`}
             >
-              <Bell className="h-5 w-5 shrink-0" />
-            </Button>
+<Bell className="h-5 w-5 shrink-0" />
+                {sidebarExpanded && <span className="ml-3 text-sm">Notifications</span>}
+  </Button>
           </div>
         </nav>
 
         <div className="flex flex-col gap-1 pt-4 items-center">
-          <div className="relative mb-1">
-            <Button
-              variant="ghost"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              aria-label="Toggle theme"
-              className="h-10 w-10 shrink-0 text-muted-foreground hover:text-foreground hover:bg-accent"
-            >
-              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
-            <div className="text-[9px] text-muted-foreground text-center mt-1 font-medium">
-              {theme === "dark" ? "Light" : "Dark"}
-            </div>
-          </div>
-
           <Button
             variant="ghost"
             onClick={() => setShowAccountMenu(!showAccountMenu)}
-            className="h-10 w-10 shrink-0 text-muted-foreground hover:text-foreground hover:bg-accent p-0"
+            aria-label="Account"
+            className={`h-10 shrink-0 text-muted-foreground hover:text-foreground hover:bg-accent p-0 ${sidebarExpanded ? "w-full justify-start gap-3" : "w-10 justify-center"}`}
           >
-            <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full overflow-visible ring-2 ring-primary/60 bg-muted">
+            <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full overflow-visible bg-muted">
               {accountPicture ? (
                 <img src={accountPicture} alt="Google profile" className="h-9 w-9 rounded-full object-cover" />
               ) : isSignedIn ? (
@@ -319,14 +376,15 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
                 </span>
               )}
             </div>
+            {sidebarExpanded && <span className="truncate text-xs font-medium">{isSignedIn ? accountName : "Account"}</span>}
           </Button>
-          <div className="text-[9px] text-muted-foreground text-center font-medium">Account</div>
+          <span className="sr-only">Account</span>
 
         </div>
       </div>
 
-      {openPanel && (
-        <div key={openPanel} className="w-[216px] bg-background border-r border-border">
+      {openPanel && hasMounted && !sidebarExpanded && (
+        <div key={openPanel} className="absolute left-full top-0 z-50 h-full w-[190px] border-r border-border bg-background shadow-xl">
           {openPanel === "history" && (
             <div className="flex flex-col h-full animate-in fade-in duration-300">
               <div className="flex items-center justify-between px-3 py-2.5">
@@ -413,6 +471,28 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
                   <Star className="h-4 w-4 shrink-0" />
                   <span className="font-normal">Top</span>
                 </button>
+              </div>
+              <div className="px-3 pb-2 pt-1">
+                <h3 className="px-1 text-[11px] font-medium text-muted-foreground">AI tools</h3>
+              </div>
+              <div className="space-y-0.5 px-1.5">
+                {[
+                  { name: "Gemini", icon: Sparkles },
+                  { name: "ChatGPT", icon: MessageCircle },
+                  { name: "Hugging Face", icon: Bot },
+                  { name: "Mistral", icon: BrainCircuit },
+                ].map(({ name, icon: Icon }) => (
+                  <button
+                    key={name}
+                    type="button"
+                    className="flex w-full items-center gap-2.5 rounded px-2.5 py-2 text-left text-[13px] transition-colors hover:bg-accent"
+  aria-label={`${name} plugin`}
+  onClick={() => name !== "ChatGPT" && onAddAiTool?.(name === "Gemini" ? "gemini" : name === "Mistral" ? "mistral" : "huggingface")}
+  >
+                    <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span className="font-normal">{name}</span>
+                  </button>
+                ))}
               </div>
             </div>
           )}

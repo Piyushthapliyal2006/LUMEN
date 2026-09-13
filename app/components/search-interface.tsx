@@ -1,10 +1,17 @@
 "use client"
-import { ChatSession, Sidebar } from "./sidebar"
+import dynamic from "next/dynamic"
+import type { ChatSession } from "./sidebar"
 import { SearchBar } from "./search-bar"
+
+const Sidebar = dynamic(() => import("./sidebar").then((module) => module.Sidebar), {
+  ssr: false,
+  loading: () => <div className="h-full w-12 shrink-0 border-r border-border bg-background" aria-hidden="true" />,
+})
 import { WidgetCards } from "./widget-cards"
 import { useEffect, useState } from "react"
 import { Check, Copy, Pencil } from "lucide-react"
 import type { ReactNode } from "react"
+import { AiComparison, type Provider } from "./ai-comparison"
 
 type MessageAttachment = { name: string; type: string; preview?: string }
 type MessageSource = { title: string; url: string; domain: string }
@@ -36,6 +43,17 @@ export function Search() {
   const [editingMessage, setEditingMessage] = useState<number | null>(null)
   const [editText, setEditText] = useState("")
   const [copiedMessage, setCopiedMessage] = useState<number | null>(null)
+  const [aiTools, setAiTools] = useState<Provider[]>([])
+  const [showSpaces, setShowSpaces] = useState(false)
+  const [spaceNames, setSpaceNames] = useState(["My Space"])
+  const [spaceDraft, setSpaceDraft] = useState("")
+  const [spaceItems, setSpaceItems] = useState<Record<string, string[]>>({ "My Space": [] })
+  const [openSpace, setOpenSpace] = useState<string | null>(null)
+  const [dropTargetSpace, setDropTargetSpace] = useState<string | null>(null)
+
+  const addAiTool = (provider: Provider) => {
+    setAiTools((current) => current.includes(provider) ? current : [...current, provider])
+  }
 
   useEffect(() => {
     const savedConversationId = window.sessionStorage.getItem("lumen-conversation-id") || crypto.randomUUID()
@@ -212,6 +230,8 @@ export function Search() {
       <Sidebar
         onNewChat={handleNewChat}
         onLogout={handleLogout}
+        onAddAiTool={addAiTool}
+        onOpenSpaces={() => setShowSpaces(true)}
         historyItems={history}
         onSelectHistory={handleSelectHistory}
         onShareHistory={handleShareHistory}
@@ -219,6 +239,18 @@ export function Search() {
       />
 
       <main className="flex flex-1 flex-col overflow-hidden bg-background">
+        {showSpaces ? (
+          <section className="flex-1 overflow-y-auto px-8 py-10">
+            <div className="mx-auto max-w-5xl">
+              <div className="mb-8 flex items-end justify-between gap-4">
+                <div><h1 className="text-2xl font-semibold">Spaces</h1><p className="mt-1 text-sm text-muted-foreground">Organize your conversations into focused collections.</p></div>
+                <button type="button" onClick={() => setShowSpaces(false)} className="rounded-md border border-border px-3 py-2 text-sm hover:bg-accent">Back to search</button>
+              </div>
+              <form onSubmit={(event) => { event.preventDefault(); const name = spaceDraft.trim(); if (!name) return; setSpaceNames((current) => [...current, name]); setSpaceItems((current) => ({ ...current, [name]: [] })); setSpaceDraft("") }} className="mb-6 flex max-w-sm gap-2"><input value={spaceDraft} onChange={(event) => setSpaceDraft(event.target.value)} placeholder="Name a new space" className="min-w-0 flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm outline-none" /><button type="submit" className="rounded-md bg-foreground px-3 py-2 text-sm text-background">Create</button></form>
+              {openSpace ? <div><button type="button" onClick={() => setOpenSpace(null)} className="mb-4 rounded-md border border-border px-3 py-2 text-sm hover:bg-accent">Back to spaces</button><div className="rounded-xl border border-border bg-card p-6"><h2 className="text-xl font-semibold">{openSpace}</h2><p className="mt-1 text-sm text-muted-foreground">Saved conversations</p><div className="mt-6 space-y-2">{(spaceItems[openSpace] ?? []).map((item) => <div key={item} className="group flex items-center gap-2 rounded-md bg-muted px-3 py-2"><button type="button" onClick={() => { const selected = history.find((entry) => entry.title === item); if (selected) { handleSelectHistory(selected); setShowSpaces(false) } }} className="min-w-0 flex-1 truncate text-left text-sm hover:text-primary">{item}</button><div className="flex shrink-0 items-center gap-1 opacity-70 transition-opacity group-hover:opacity-100"><button type="button" onClick={() => { const next = window.prompt("Rename chat", item)?.trim(); if (next && next !== item) setSpaceItems((current) => ({ ...current, [openSpace]: (current[openSpace] ?? []).map((entry) => entry === item ? next : entry) })) }} aria-label={`Rename ${item}`} title="Rename" className="rounded p-1 text-xs text-muted-foreground hover:bg-background hover:text-foreground">Rename</button><button type="button" onClick={() => undefined} aria-label={`Share ${item}`} title="Share" className="rounded p-1 text-xs text-muted-foreground hover:bg-background hover:text-foreground">Share</button><button type="button" onClick={() => setSpaceItems((current) => ({ ...current, [openSpace]: (current[openSpace] ?? []).filter((entry) => entry !== item) }))} aria-label={`Delete ${item}`} title="Delete" className="rounded p-1 text-xs text-muted-foreground hover:bg-background hover:text-destructive">Delete</button></div></div>)}</div></div></div> : <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{spaceNames.map((name) => <article key={name} onDragEnter={(event) => { event.preventDefault(); setDropTargetSpace(name) }} onDragOver={(event) => { event.preventDefault(); event.dataTransfer.dropEffect = "copy"; setDropTargetSpace(name) }} onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDropTargetSpace(null) }} onDrop={(event) => { event.preventDefault(); const title = event.dataTransfer.getData("text/lumen-history"); if (title && !spaceItems[name]?.includes(title)) setSpaceItems((current) => ({ ...current, [name]: [...(current[name] ?? []), title] })); setDropTargetSpace(null) }} className={`min-h-40 rounded-xl border bg-card p-4 transition-all duration-200 ${dropTargetSpace === name ? "border-primary bg-primary/10 shadow-lg shadow-primary/10 scale-[1.01]" : "border-border"}`}><div className="flex items-start justify-between gap-3"><h2 className="font-medium">{name}</h2><button type="button" aria-label={`Delete ${name}`} onClick={() => { setSpaceNames((current) => current.filter((item) => item !== name)); setSpaceItems((current) => { const next = { ...current }; delete next[name]; return next }) }} className="text-xs text-muted-foreground hover:text-destructive">Delete</button></div><div className="mt-5 space-y-1">{(spaceItems[name] ?? []).map((item) => <div key={item} className="truncate rounded bg-muted px-2 py-1 text-xs">{item}</div>)}</div><button type="button" onClick={() => setOpenSpace(name)} className="mt-6 w-full rounded-md border border-border py-2 text-sm text-muted-foreground hover:bg-accent">Open</button></article>)}</div>}
+            </div>
+          </section>
+        ) : (
         <div className="flex h-screen flex-col">
           {hasConversation ? (
             <section className="flex-1 overflow-y-auto px-4 pb-4 pt-6" aria-live="polite">
@@ -332,6 +364,10 @@ export function Search() {
             </div>
           )}
 
+          {aiTools.length > 0 && (
+            <AiComparison providers={aiTools} messages={messages} />
+          )}
+
           {hasConversation && (
             <div className="sticky bottom-0 border-t border-border/40 bg-background/85 px-4 pb-10 pt-3 backdrop-blur-sm">
               <div className="mx-auto w-full max-w-3xl">
@@ -340,6 +376,7 @@ export function Search() {
             </div>
           )}
         </div>
+        )}
       </main>
     </>
   )
