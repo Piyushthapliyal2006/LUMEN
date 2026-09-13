@@ -183,14 +183,14 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
 
   const sidebarContent = (
     <div
-      className="relative flex w-12 shrink-0 border-r border-border bg-background py-3 z-50 h-full"
+      className={`relative flex shrink-0 border-r border-border bg-background py-3 transition-[width] duration-200 ease-in-out z-50 h-full ${sidebarExpanded ? "w-60" : "w-12"}`}
       onMouseLeave={() => {
         if (!pinnedPanel) {
           setOpenPanel(null)
         }
       }}
     >
-      <div className="flex h-full w-12 shrink-0 flex-col items-center">
+      <div className={`flex h-full shrink-0 flex-col items-center ${sidebarExpanded ? "w-60 px-3" : "w-12"}`}>
         {/* Logo */}
         <Button
           variant="ghost"
@@ -238,7 +238,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
               }`}
             >
 <Clock className="h-5 w-5 shrink-0" />
-                
+                {sidebarExpanded && <span className="ml-3 text-sm">History</span>}
   </Button>
             <span className="sr-only">History</span>
           </div>
@@ -254,7 +254,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
               }`}
             >
 <Sparkles className="h-5 w-5 shrink-0" />
-                
+                {sidebarExpanded && <span className="ml-3 text-sm">Plugins</span>}
   </Button>
             <span className="sr-only">Plugins</span>
           </div>
@@ -270,7 +270,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
               }`}
             >
 <Grid3x3 className="h-5 w-5 shrink-0" />
-                
+                {sidebarExpanded && <span className="ml-3 text-sm">Spaces</span>}
   </Button>
             <span className="sr-only">Spaces</span>
           </div>
@@ -286,7 +286,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
               }`}
             >
 <MoreHorizontal className="h-5 w-5 shrink-0" />
-                
+                {sidebarExpanded && <span className="ml-3 text-sm">More</span>}
   </Button>
             <span className="sr-only">More</span>
           </div>
@@ -302,7 +302,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
               }`}
             >
 <Bell className="h-5 w-5 shrink-0" />
-                
+                {sidebarExpanded && <span className="ml-3 text-sm">Notifications</span>}
   </Button>
           </div>
         </nav>
@@ -346,7 +346,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
       </div>
 
       {hasMounted && sidebarExpanded && (
-        <div className="absolute inset-y-0 left-full z-[60] flex w-[254px] flex-col border-r border-border bg-background px-2 py-3 shadow-2xl">
+        <div className="absolute inset-y-0 left-0 z-[60] flex w-[254px] flex-col border-r border-border bg-background px-2 py-3 shadow-2xl">
           <div className="flex items-center justify-between px-2 pb-4">
             <button
               type="button"
