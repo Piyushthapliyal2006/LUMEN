@@ -330,7 +330,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
       </div>
 
       {openPanel && (
-        <div key={openPanel} className="w-[216px] bg-background border-r border-border">
+        <div key={openPanel} className="w-[190px] bg-background border-r border-border">
           {openPanel === "history" && (
             <div className="flex flex-col h-full animate-in fade-in duration-300">
               <div className="flex items-center justify-between px-3 py-2.5">
