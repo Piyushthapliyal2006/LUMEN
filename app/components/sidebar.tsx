@@ -65,6 +65,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
   const [mobileOpen, setMobileOpen] = useState(false)
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [logoHovered, setLogoHovered] = useState(false)
+  const [hasMounted, setHasMounted] = useState(false)
   const [theme, setTheme] = useState<"light" | "dark">("light")
   const [logoSrc, setLogoSrc] = useState("/firelogo.png")
   const [showAuthPrompt, setShowAuthPrompt] = useState(false)
@@ -72,6 +73,10 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
   const [isSignedIn, setIsSignedIn] = useState(false)
   const [accountName, setAccountName] = useState("Account")
   const [accountPicture, setAccountPicture] = useState("")
+
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
 
   useEffect(() => {
     const source = new window.Image()
@@ -193,11 +198,11 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
           onClick={() => setSidebarExpanded((expanded) => !expanded)}
           onMouseEnter={() => setLogoHovered(true)}
           onMouseLeave={() => setLogoHovered(false)}
-          className={`mb-5 h-9 shrink-0 overflow-visible rounded-md border-0 p-0 shadow-none transition-all hover:bg-accent hover:shadow-none ${sidebarExpanded ? "w-9 bg-accent" : "w-9 bg-transparent"}`}
-          aria-label={sidebarExpanded ? "Collapse navigation" : "Expand navigation"}
-          title={sidebarExpanded ? "Collapse navigation" : "Expand navigation"}
+          className={`mb-5 h-9 shrink-0 overflow-visible rounded-md border-0 p-0 shadow-none transition-all hover:bg-accent hover:shadow-none ${hasMounted && sidebarExpanded ? "w-9 bg-accent" : "w-9 bg-transparent"}`}
+          aria-label={hasMounted && sidebarExpanded ? "Collapse navigation" : "Expand navigation"}
+          title={hasMounted && sidebarExpanded ? "Collapse navigation" : "Expand navigation"}
         >
-          {logoHovered || sidebarExpanded ? (
+          {hasMounted && (logoHovered || sidebarExpanded) ? (
             <PanelLeft className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
           ) : (
             <Image
@@ -335,7 +340,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
         </div>
       </div>
 
-      {sidebarExpanded && (
+      {hasMounted && sidebarExpanded && (
         <div className="absolute inset-y-0 left-0 z-[60] flex w-[254px] flex-col border-r border-border bg-background px-2 py-3 shadow-2xl">
           <div className="flex items-center justify-between px-2 pb-4">
             <button
@@ -382,7 +387,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
         </div>
       )}
 
-      {openPanel && !sidebarExpanded && (
+      {openPanel && hasMounted && !sidebarExpanded && (
         <div key={openPanel} className="absolute left-full top-0 z-50 h-full w-[190px] border-r border-border bg-background shadow-xl">
           {openPanel === "history" && (
             <div className="flex flex-col h-full animate-in fade-in duration-300">
