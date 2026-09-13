@@ -252,9 +252,9 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
   </Button>
             <span className="sr-only">History</span>
             {sidebarExpanded && (
-              <div className="ml-8 max-h-40 overflow-y-auto pb-1 pt-0.5">
+              <div className="ml-8 max-h-48 overflow-y-auto pb-1 pt-1">
                 {historyItems.slice(0, 8).map((item) => (
-                  <button key={item.id} type="button" onClick={() => onSelectHistory?.(item)} className="block w-full truncate rounded px-2 py-1 text-left text-[11px] text-muted-foreground hover:bg-accent hover:text-foreground">
+                  <button key={item.id} type="button" onClick={() => onSelectHistory?.(item)} className="block w-full truncate rounded-md px-2 py-1.5 text-left text-sm leading-5 text-foreground/85 hover:bg-accent hover:text-foreground">
                     {item.title}
                   </button>
                 ))}
