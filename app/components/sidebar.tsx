@@ -56,9 +56,10 @@ type SidebarProps = {
   onShareHistory?: (session: ChatSession) => void
   onDeleteHistory?: (session: ChatSession) => void
   onAddAiTool?: (tool: "gemini" | "mistral" | "huggingface") => void
+  onOpenSpaces?: () => void
 }
 
-export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistory, onShareHistory, onDeleteHistory, onAddAiTool }: SidebarProps) {
+export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistory, onShareHistory, onDeleteHistory, onAddAiTool, onOpenSpaces }: SidebarProps) {
   const [openPanel, setOpenPanel] = useState<string | null>(null)
   const [pinnedPanel, setPinnedPanel] = useState<string | null>(null)
   const [showAccountMenu, setShowAccountMenu] = useState(false)
@@ -234,7 +235,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
         </Button>
 
         <nav className="flex flex-1 flex-col gap-0.5">
-          <div className="relative mb-1">
+          <div className="relative order-5 mb-1">
             <Button
               variant="ghost"
               onClick={() => handlePanelChange("history")}
@@ -261,7 +262,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
             )}
           </div>
 
-          <div className="relative mb-1">
+          <div className="relative order-1 mb-1">
             <Button
               variant="ghost"
               onClick={() => handlePanelChange("plugins")}
@@ -288,10 +289,10 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
             )}
           </div>
 
-          <div className="relative mb-1">
+          <div className="relative order-2 mb-1">
               <Button
               variant="ghost"
-              onClick={() => handlePanelChange("spaces")}
+              onClick={() => { handlePanelChange("spaces"); onOpenSpaces?.() }}
               title={sidebarExpanded ? undefined : "Spaces"}
               aria-label="Spaces"
               className={`h-10 shrink-0 transition-colors ${sidebarExpanded ? "w-full justify-start px-0" : "mx-auto w-10 justify-center"} ${
@@ -320,7 +321,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
             )}
           </div>
 
-          <div className="relative mb-1">
+          <div className="relative order-3 mb-1">
             <Button
               variant="ghost"
               title={sidebarExpanded ? undefined : "More"}
@@ -337,7 +338,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
             <span className="sr-only">More</span>
           </div>
 
-          <div className="relative mb-1">
+          <div className="relative order-4 mb-1">
             <Button
               variant="ghost"
               title={sidebarExpanded ? undefined : "Notifications"}

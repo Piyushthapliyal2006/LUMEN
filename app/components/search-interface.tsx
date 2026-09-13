@@ -44,6 +44,10 @@ export function Search() {
   const [editText, setEditText] = useState("")
   const [copiedMessage, setCopiedMessage] = useState<number | null>(null)
   const [aiTools, setAiTools] = useState<Provider[]>([])
+  const [showSpaces, setShowSpaces] = useState(false)
+  const [spaceNames, setSpaceNames] = useState(["My Space"])
+  const [spaceDraft, setSpaceDraft] = useState("")
+  const [spaceItems, setSpaceItems] = useState<Record<string, string[]>>({ "My Space": [] })
 
   const addAiTool = (provider: Provider) => {
     setAiTools((current) => current.includes(provider) ? current : [...current, provider])
@@ -225,6 +229,7 @@ export function Search() {
         onNewChat={handleNewChat}
         onLogout={handleLogout}
         onAddAiTool={addAiTool}
+        onOpenSpaces={() => setShowSpaces(true)}
         historyItems={history}
         onSelectHistory={handleSelectHistory}
         onShareHistory={handleShareHistory}
@@ -232,6 +237,18 @@ export function Search() {
       />
 
       <main className="flex flex-1 flex-col overflow-hidden bg-background">
+        {showSpaces ? (
+          <section className="flex-1 overflow-y-auto px-8 py-10">
+            <div className="mx-auto max-w-5xl">
+              <div className="mb-8 flex items-end justify-between gap-4">
+                <div><h1 className="text-2xl font-semibold">Spaces</h1><p className="mt-1 text-sm text-muted-foreground">Organize your conversations into focused collections.</p></div>
+                <button type="button" onClick={() => setShowSpaces(false)} className="rounded-md border border-border px-3 py-2 text-sm hover:bg-accent">Back to search</button>
+              </div>
+              <form onSubmit={(event) => { event.preventDefault(); const name = spaceDraft.trim(); if (!name) return; setSpaceNames((current) => [...current, name]); setSpaceItems((current) => ({ ...current, [name]: [] })); setSpaceDraft("") }} className="mb-6 flex max-w-sm gap-2"><input value={spaceDraft} onChange={(event) => setSpaceDraft(event.target.value)} placeholder="Name a new space" className="min-w-0 flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm outline-none" /><button type="submit" className="rounded-md bg-foreground px-3 py-2 text-sm text-background">Create</button></form>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{spaceNames.map((name) => <article key={name} className="min-h-40 rounded-xl border border-border bg-card p-4"><div className="flex items-start justify-between gap-3"><h2 className="font-medium">{name}</h2><button type="button" aria-label={`Delete ${name}`} onClick={() => { setSpaceNames((current) => current.filter((item) => item !== name)); setSpaceItems((current) => { const next = { ...current }; delete next[name]; return next }) }} className="text-xs text-muted-foreground hover:text-destructive">Delete</button></div><div className="mt-5 space-y-1">{(spaceItems[name] ?? []).map((item) => <div key={item} className="truncate rounded bg-muted px-2 py-1 text-xs">{item}</div>)}</div><button type="button" onClick={() => { const next = history.find((item) => !spaceItems[name]?.includes(item.title)); if (next) setSpaceItems((current) => ({ ...current, [name]: [...(current[name] ?? []), next.title] })) }} className="mt-6 w-full rounded-md border border-dashed border-border py-2 text-sm text-muted-foreground hover:bg-accent">Add history</button></article>)}</div>
+            </div>
+          </section>
+        ) : (
         <div className="flex h-screen flex-col">
           {hasConversation ? (
             <section className="flex-1 overflow-y-auto px-4 pb-4 pt-6" aria-live="polite">
@@ -357,6 +374,7 @@ export function Search() {
             </div>
           )}
         </div>
+        )}
       </main>
     </>
   )
