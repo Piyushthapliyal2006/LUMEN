@@ -62,6 +62,8 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
   const [openPanel, setOpenPanel] = useState<string | null>(null)
   const [pinnedPanel, setPinnedPanel] = useState<string | null>(null)
   const [showAccountMenu, setShowAccountMenu] = useState(false)
+  const [spaces, setSpaces] = useState<string[]>(["My Space"])
+  const [newSpaceName, setNewSpaceName] = useState("")
   const [mobileOpen, setMobileOpen] = useState(false)
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [logoHovered, setLogoHovered] = useState(false)
@@ -248,11 +250,21 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
                 {sidebarExpanded && <span className="ml-3 text-sm">History</span>}
   </Button>
             <span className="sr-only">History</span>
+            {sidebarExpanded && (
+              <div className="ml-8 max-h-40 overflow-y-auto pb-1 pt-0.5">
+                {historyItems.slice(0, 8).map((item) => (
+                  <button key={item.id} type="button" onClick={() => onSelectHistory?.(item)} className="block w-full truncate rounded px-2 py-1 text-left text-[11px] text-muted-foreground hover:bg-accent hover:text-foreground">
+                    {item.title}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="relative mb-1">
             <Button
               variant="ghost"
+              onClick={() => handlePanelChange("plugins")}
               title={sidebarExpanded ? undefined : "Plugins"}
               aria-label="Plugins"
               className={`h-10 shrink-0 transition-colors ${sidebarExpanded ? "w-full justify-start px-0" : "mx-auto w-10 justify-center"} ${
@@ -265,11 +277,21 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
                 {sidebarExpanded && <span className="ml-3 text-sm">Plugins</span>}
   </Button>
             <span className="sr-only">Plugins</span>
+            {sidebarExpanded && openPanel === "plugins" && (
+              <div className="ml-8 space-y-0.5 pb-1 pt-0.5">
+                {["Gemini", "ChatGPT", "Hugging Face", "Mistral"].map((name) => (
+                  <button key={name} type="button" onClick={() => name === "Mistral" && onAddAiTool?.("mistral")} className="block w-full rounded px-2 py-1 text-left text-[11px] text-muted-foreground hover:bg-accent hover:text-foreground">
+                    {name}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="relative mb-1">
-            <Button
+              <Button
               variant="ghost"
+              onClick={() => handlePanelChange("spaces")}
               title={sidebarExpanded ? undefined : "Spaces"}
               aria-label="Spaces"
               className={`h-10 shrink-0 transition-colors ${sidebarExpanded ? "w-full justify-start px-0" : "mx-auto w-10 justify-center"} ${
@@ -282,6 +304,20 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
                 {sidebarExpanded && <span className="ml-3 text-sm">Spaces</span>}
   </Button>
             <span className="sr-only">Spaces</span>
+            {sidebarExpanded && openPanel === "spaces" && (
+              <div className="ml-8 space-y-1 pb-1 pt-0.5">
+                {spaces.map((space) => (
+                  <div key={space} className="flex items-center gap-1">
+                    <button type="button" className="min-w-0 flex-1 truncate rounded px-2 py-1 text-left text-[11px] text-muted-foreground hover:bg-accent hover:text-foreground">{space}</button>
+                    <button type="button" aria-label={`Delete ${space}`} onClick={() => setSpaces((current) => current.filter((item) => item !== space))} className="rounded px-1 text-[10px] text-muted-foreground hover:bg-accent hover:text-destructive">×</button>
+                  </div>
+                ))}
+                <form onSubmit={(event) => { event.preventDefault(); const name = newSpaceName.trim(); if (name) { setSpaces((current) => [...current, name]); setNewSpaceName("") } }} className="flex gap-1">
+                  <input value={newSpaceName} onChange={(event) => setNewSpaceName(event.target.value)} placeholder="New space" className="min-w-0 flex-1 rounded border border-border bg-background px-2 py-1 text-[11px] outline-none" />
+                  <button type="submit" className="rounded bg-muted px-1.5 text-[11px] hover:bg-accent">Add</button>
+                </form>
+              </div>
+            )}
           </div>
 
           <div className="relative mb-1">
@@ -319,22 +355,11 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
         </nav>
 
         <div className="flex flex-col gap-1 pt-4 items-center">
-          <div className="relative mb-1">
-            <Button
-              variant="ghost"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              aria-label="Toggle theme"
-              className="h-10 w-10 shrink-0 text-muted-foreground hover:text-foreground hover:bg-accent"
-            >
-              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
-            <span className="sr-only">{theme === "dark" ? "Light mode" : "Dark mode"}</span>
-          </div>
-
           <Button
             variant="ghost"
             onClick={() => setShowAccountMenu(!showAccountMenu)}
-            className="h-10 w-10 shrink-0 text-muted-foreground hover:text-foreground hover:bg-accent p-0"
+            aria-label="Account"
+            className={`h-10 shrink-0 text-muted-foreground hover:text-foreground hover:bg-accent p-0 ${sidebarExpanded ? "w-full justify-start gap-3" : "w-10 justify-center"}`}
           >
             <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full overflow-visible ring-2 ring-primary/60 bg-muted">
               {accountPicture ? (
@@ -350,6 +375,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
                 </span>
               )}
             </div>
+            {sidebarExpanded && <span className="truncate text-xs font-medium">{isSignedIn ? accountName : "Account"}</span>}
           </Button>
           <span className="sr-only">Account</span>
 
