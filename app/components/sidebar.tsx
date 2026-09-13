@@ -254,7 +254,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
             {sidebarExpanded && (
               <div className="ml-8 max-h-48 overflow-y-auto pb-1 pt-1">
                 {historyItems.slice(0, 8).map((item) => (
-                  <button key={item.id} type="button" draggable onDragStart={(event) => event.dataTransfer.setData("text/lumen-history", item.title)} onClick={() => onSelectHistory?.(item)} className="block w-full truncate rounded-md px-2 py-1.5 text-left text-sm leading-5 text-foreground/85 hover:bg-accent hover:text-foreground">
+                  <button key={item.id} type="button" draggable onDragStart={(event) => { event.dataTransfer.effectAllowed = "copy"; event.dataTransfer.setData("text/lumen-history", item.title) }} onDragEnd={() => undefined} onClick={() => onSelectHistory?.(item)} className="block w-full truncate rounded-md px-2 py-1.5 text-left text-sm leading-5 text-foreground/85 hover:bg-accent hover:text-foreground">
                     {item.title}
                   </button>
                 ))}
