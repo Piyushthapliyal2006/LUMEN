@@ -250,7 +250,6 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
 <Clock className="h-5 w-5 shrink-0" />
                 {sidebarExpanded && <span className="ml-3 text-sm font-medium">History</span>}
   </Button>
-            {sidebarExpanded && <div className="ml-8 mr-2 border-b border-black" aria-hidden="true" />}
             <span className="sr-only">History</span>
             {sidebarExpanded && (
               <div className="ml-8 max-h-48 overflow-y-auto pb-1 pt-1">
