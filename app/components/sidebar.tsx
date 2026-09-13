@@ -190,7 +190,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
         }
       }}
     >
-      <div className={`flex h-full shrink-0 flex-col items-center ${sidebarExpanded ? "w-60 px-3" : "w-12"}`}>
+      <div className={`flex h-full shrink-0 flex-col ${sidebarExpanded ? "w-60 items-stretch px-3" : "w-12 items-center"}`}>
         {/* Logo */}
         <Button
           variant="ghost"
@@ -220,9 +220,10 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
           variant="ghost"
           onClick={handleNewChat}
           aria-label="Open a new chat"
-          className="mb-8 h-10 w-10 shrink-0 rounded-full bg-muted/50 text-muted-foreground hover:bg-accent hover:text-foreground"
+          className={`mb-8 h-10 shrink-0 rounded-full bg-muted/50 text-muted-foreground hover:bg-accent hover:text-foreground ${sidebarExpanded ? "w-full justify-start gap-3 px-0" : "w-10 justify-center"}`}
         >
           <Plus className="h-5 w-5 shrink-0" />
+          {sidebarExpanded && <span className="text-sm">New chat</span>}
         </Button>
 
         <nav className="flex flex-1 flex-col gap-1">
@@ -231,7 +232,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
               variant="ghost"
               onClick={() => handlePanelChange("history")}
               onMouseEnter={() => handlePanelChange("history")}
-              className={`h-10 shrink-0 transition-colors ${sidebarExpanded ? "w-full justify-start px-3" : "mx-auto w-10 justify-center"} ${
+              className={`h-10 shrink-0 transition-colors ${sidebarExpanded ? "w-full justify-start px-0" : "mx-auto w-10 justify-center"} ${
                 openPanel === "history"
                   ? "text-foreground bg-accent"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent"
@@ -247,7 +248,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
             <Button
               variant="ghost"
               onMouseEnter={() => handlePanelChange("plugins")}
-              className={`h-10 shrink-0 transition-colors ${sidebarExpanded ? "w-full justify-start px-3" : "mx-auto w-10 justify-center"} ${
+              className={`h-10 shrink-0 transition-colors ${sidebarExpanded ? "w-full justify-start px-0" : "mx-auto w-10 justify-center"} ${
                 openPanel === "plugins"
                   ? "text-foreground bg-accent"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent"
@@ -263,7 +264,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
             <Button
               variant="ghost"
               onMouseEnter={() => handlePanelChange("spaces")}
-              className={`h-10 shrink-0 transition-colors ${sidebarExpanded ? "w-full justify-start px-3" : "mx-auto w-10 justify-center"} ${
+              className={`h-10 shrink-0 transition-colors ${sidebarExpanded ? "w-full justify-start px-0" : "mx-auto w-10 justify-center"} ${
                 openPanel === "spaces"
                   ? "text-foreground bg-accent"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent"
@@ -279,7 +280,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
             <Button
               variant="ghost"
               onMouseEnter={() => handlePanelChange("more")}
-              className={`h-10 shrink-0 transition-colors ${sidebarExpanded ? "w-full justify-start px-3" : "mx-auto w-10 justify-center"} ${
+              className={`h-10 shrink-0 transition-colors ${sidebarExpanded ? "w-full justify-start px-0" : "mx-auto w-10 justify-center"} ${
                 openPanel === "more"
                   ? "text-foreground bg-accent"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent"
@@ -295,7 +296,7 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
             <Button
               variant="ghost"
               onMouseEnter={() => handlePanelChange("notifications")}
-              className={`h-10 shrink-0 transition-colors ${sidebarExpanded ? "w-full justify-start px-3" : "mx-auto w-10 justify-center"} ${
+              className={`h-10 shrink-0 transition-colors ${sidebarExpanded ? "w-full justify-start px-0" : "mx-auto w-10 justify-center"} ${
                 openPanel === "notifications"
                   ? "text-foreground bg-accent"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent"
@@ -344,53 +345,6 @@ export function Sidebar({ onNewChat, onLogout, historyItems = [], onSelectHistor
 
         </div>
       </div>
-
-      {hasMounted && sidebarExpanded && (
-        <div className="absolute inset-y-0 left-0 z-[60] flex w-[254px] flex-col border-r border-border bg-background px-2 py-3 shadow-2xl">
-          <div className="flex items-center justify-between px-2 pb-4">
-            <button
-              type="button"
-              onClick={() => setSidebarExpanded(false)}
-              aria-label="Collapse navigation"
-              className="flex items-center gap-2 rounded-md px-1 py-1 text-sm font-semibold hover:bg-accent"
-            >
-              <PanelLeft className="h-4 w-4 text-muted-foreground" />
-              Lumen
-            </button>
-            <span className="text-xs text-muted-foreground">Navigation</span>
-          </div>
-          <div className="space-y-1">
-            <button type="button" onClick={handleNewChat} className="flex w-full items-center gap-3 rounded-lg bg-muted px-3 py-2 text-left text-sm hover:bg-accent">
-              <Plus className="h-4 w-4" /> New chat
-            </button>
-            {[
-              { label: "History", icon: Clock, panel: "history" },
-              { label: "Plugins", icon: Sparkles, panel: "plugins" },
-              { label: "Spaces", icon: LayoutGrid, panel: "spaces" },
-              { label: "More", icon: MoreHorizontal, panel: "more" },
-            ].map(({ label, icon: Icon, panel }) => (
-              <button
-                key={panel}
-                type="button"
-                onClick={() => { setSidebarExpanded(false); handlePanelChange(panel) }}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
-              >
-                <Icon className="h-4 w-4" /> {label}
-              </button>
-            ))}
-          </div>
-          <div className="mt-6 border-t border-border px-3 pt-4 text-xs font-medium text-muted-foreground">Recent</div>
-          <ScrollArea className="mt-2 flex-1 px-1">
-            <div className="space-y-1">
-              {historyItems.slice(0, 12).map((item) => (
-                <button key={item.id} type="button" onClick={() => { onSelectHistory?.(item); setSidebarExpanded(false) }} className="block w-full truncate rounded-md px-3 py-2 text-left text-sm hover:bg-accent">
-                  {item.title}
-                </button>
-              ))}
-            </div>
-          </ScrollArea>
-        </div>
-      )}
 
       {openPanel && hasMounted && !sidebarExpanded && (
         <div key={openPanel} className="absolute left-full top-0 z-50 h-full w-[190px] border-r border-border bg-background shadow-xl">
